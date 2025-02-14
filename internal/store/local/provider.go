@@ -38,5 +38,6 @@ func InitLocalStore() (*LocalStore, error) {
 	}
 	return &LocalStore{
 		books: localStore,
+		loans: make(map[int]*model.LoanDetails), // initializing the map
 	}, nil
 }

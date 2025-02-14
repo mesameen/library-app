@@ -79,6 +79,7 @@ func (h *Handler) BorrowBook(c *gin.Context) {
 		c.JSON(http.StatusConflict, gin.H{"error": fmt.Sprintf("not enough copies of requested title %v", title)})
 		return
 	}
+	h.repo.AddLoan(c, nil)
 	c.JSON(http.StatusCreated, nil)
 }
 
