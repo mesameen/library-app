@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync/atomic"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/test/library-app/internal/logger"
@@ -53,34 +55,61 @@ func (h *Handler) GetBook(c *gin.Context) {
 	c.JSON(http.StatusOK, det)
 }
 
-// BorrowBook borrows a book from store and returns the details of a loan
+// BorrowBook borrows a book from store (loan period: 4 weeks) and returns the details of a loan
 func (h *Handler) BorrowBook(c *gin.Context) {
-	title := c.Param("title")
-	if len(title) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "title is mandatory"})
+	var borrowReq model.LoanRequest
+	err := c.BindJSON(&borrowReq)
+	if err != nil {
+		logger.Errorf("Failed to unamrshal the request body: %v", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
 		return
 	}
-	det, err := h.repo.GetBookDetails(c, title)
+	if borrowReq.NameOfBorrower == "" || borrowReq.Title == "" {
+		logger.Errorf("NameOfBorrower & Title are mandatory to borrow a a book.")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "NameOfBorrower or Title are missed in the request"})
+		return
+	}
+	det, err := h.repo.GetBookDetails(c, borrowReq.Title)
 	if err != nil {
 		// if notfound needs to return the specific error code and details
 		if errors.Is(err, model.ErrNotFound) {
 			// unwrapping to send actual error
-			err = errors.Unwrap(err)
-			logger.Errorf("%s", err.Error())
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			uwErr := errors.Unwrap(err)
+			logger.Errorf("%s", uwErr.Error())
+			c.JSON(http.StatusNotFound, gin.H{"error": uwErr})
 			return
 		}
 		// rest of all errors falls under this category
-		logger.Errorf("fetching title %s failed. Error: %v", title, err)
+		logger.Errorf("fetching title %s failed. Error: %v", borrowReq.Title, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	// if available copies are zero returning the error
 	if det.AvailableCopies == 0 {
-		c.JSON(http.StatusConflict, gin.H{"error": fmt.Sprintf("not enough copies of requested title %v", title)})
+		c.JSON(http.StatusConflict, gin.H{"error": fmt.Sprintf("not enough copies of requested title %v", borrowReq.Title)})
 		return
 	}
-	h.repo.AddLoan(c, nil)
-	c.JSON(http.StatusCreated, nil)
+	loanDetails := &model.LoanDetails{
+		ID:             GetUniqueIncrementedID(),
+		NameOfBorrower: borrowReq.NameOfBorrower,
+		Title:          borrowReq.Title,
+		LoanDate:       time.Now().Unix(),
+		ReturnDate:     time.Now().Add(24 * 7 * time.Hour).Unix(), // 7 days return period
+	}
+	_, err = h.repo.AddLoan(c, loanDetails)
+	if err != nil {
+		c.JSON(http.StatusConflict, gin.H{"error": fmt.Sprintf("not enough copies of requested title %v", borrowReq.Title)})
+		return
+	}
+	c.JSON(http.StatusCreated, loanDetails)
+}
+
+var uniqueID int32
+
+func GetUniqueIncrementedID() int {
+	// incrementing uniqueID
+	atomic.AddInt32(&uniqueID, 1)
+	return int(uniqueID)
 }
 
 // ExtendLoan extends the loan of a book

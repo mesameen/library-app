@@ -16,7 +16,7 @@ type Store interface {
 	// GetAllBookDetails retreves book details from store
 	GetAllBookDetails(ctx context.Context) ([]*model.BookDetails, error)
 	// AddLoan adds the loan details to store
-	AddLoan(ctx context.Context, det *model.LoanDetails) error
+	AddLoan(ctx context.Context, det *model.LoanDetails) (int, error)
 	Close() error
 }
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"sync/atomic"
 
 	"github.com/test/library-app/internal/logger"
 	"github.com/test/library-app/internal/model"
@@ -26,31 +25,28 @@ func (l *LocalStore) GetAllBookDetails(ctx context.Context) ([]*model.BookDetail
 
 // GetBookDetails retreves book details from store
 func (l *LocalStore) GetBookDetails(ctx context.Context, title string) (*model.BookDetails, error) {
-	titleLower := strings.ToLower(title)
 	// retireving it from store
-	book, ok := l.books[titleLower]
+	book, ok := l.books[strings.ToLower(title)]
 	if !ok {
 		// If requested title isn't presents returning error with info,
-		err := fmt.Errorf("book with tile '%s' isn't presents", title)
+		err := fmt.Errorf("book with title '%s' isn't presents", title)
 		// wrapping with NotFound error to identify the error type by caller or middleware
-		return book, fmt.Errorf("%v %w", err, model.ErrNotFound)
+		return nil, fmt.Errorf("%v %w", err, model.ErrNotFound)
 	}
 	return book, nil
 }
 
 // AddLoan adds the loan details to store
-func (l *LocalStore) AddLoan(ctx context.Context, det *model.LoanDetails) error {
-	loanID := GetUniqueIncrementedID()
-	l.loans[loanID] = det
-	return nil
-}
+func (l *LocalStore) AddLoan(ctx context.Context, det *model.LoanDetails) (int, error) {
+	l.loans[det.ID] = det
 
-var uniqueID int32
+	// reducing one from the avalilablecopies of the title
+	bookDet := l.books[strings.ToLower(det.Title)]
+	// reducing one from available copies
+	bookDet.AvailableCopies -= 1
 
-func GetUniqueIncrementedID() int {
-	// incrementing uniqueID
-	atomic.AddInt32(&uniqueID, 1)
-	return int(uniqueID)
+	logger.Infof("Loan entry added for book title: %s", det.Title)
+	return det.ID, nil
 }
 
 // Close clears the memory

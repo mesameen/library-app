@@ -11,7 +11,7 @@ func InitLocalStore() (*LocalStore, error) {
 	books := []*model.BookDetails{
 		{
 			Title:           "Book_1",
-			AvailableCopies: 10,
+			AvailableCopies: 3,
 		},
 		{
 			Title:           "Book_2",
