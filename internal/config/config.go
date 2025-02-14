@@ -6,7 +6,14 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-type CommonConfiguration struct{}
+type CommonConfiguration struct {
+	ServicePort       int    `default:"3000"`
+	ReadTimeoutInSec  int    `default:"15"`
+	WriteTimeoutInSec int    `default:"15"`
+	IdleTimeoutInSec  int    `deault:"60"`
+	StoreType         string `default:"local"`
+}
+
 type LogConfiguration struct {
 	Level    string `default:"-1"`
 	Format   string `default:"_2 Jan 2006 15:04:05.000"`
