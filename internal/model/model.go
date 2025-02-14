@@ -1,10 +1,12 @@
 package model
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 // BookDetail represents book details
 type BookDetail struct {
-	ID              int
 	Title           string // Unique Identifier for the book
 	AvailableCopies int    // No of available copies of the book that can be loaned
 }
@@ -15,3 +17,8 @@ type LoanDetails struct {
 	LoanDate       time.Time // Date when the book was borrowed
 	ReturnDate     time.Time // Date when the book should be returned
 }
+
+// Custom Errors
+var (
+	ErrNotFound = errors.New("not found")
+)

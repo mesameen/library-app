@@ -37,9 +37,9 @@ func main() {
 	// Actual handler to handles the requests
 	handler := handler.NewHandler(store)
 	router.GET("/", handler.Hello)
-	router.GET("/book", handler.GetBook)
+	router.GET("/book/:title", handler.GetBook)
 	router.POST("/borrow", handler.BorrowBook)
-	router.POST("/extend", handler.ExtendBook)
+	router.POST("/extend", handler.ExtendLoan)
 	router.POST("/return", handler.ReturnBook)
 
 	// Attaching the request handlers, port etc to the server

@@ -5,10 +5,13 @@ import (
 
 	"github.com/test/library-app/internal/config"
 	"github.com/test/library-app/internal/constants"
+	"github.com/test/library-app/internal/model"
 	"github.com/test/library-app/internal/store/local"
 )
 
 type Store interface {
+	// GetBookDetails retreves book details from store
+	GetBookDetails(title string) (*model.BookDetail, error)
 	Close() error
 }
 

@@ -1,33 +1,40 @@
 package local
 
-import "github.com/test/library-app/internal/model"
+import (
+	"strings"
 
+	"github.com/test/library-app/internal/model"
+)
+
+// InitLocalStore initializes with some book details
 func InitLocalStore() (*LocalStore, error) {
-	var localStore = make(map[int]*model.BookDetail)
-	localStore[1] = &model.BookDetail{
-		ID:              1,
-		Title:           "Book 1",
-		AvailableCopies: 10,
+	books := []*model.BookDetail{
+		{
+			Title:           "Book_1",
+			AvailableCopies: 10,
+		},
+		{
+			Title:           "Book_2",
+			AvailableCopies: 10,
+		},
+		{
+			Title:           "Book_3",
+			AvailableCopies: 10,
+		},
+		{
+			Title:           "Book_4",
+			AvailableCopies: 10,
+		},
+		{
+			Title:           "Book_5",
+			AvailableCopies: 10,
+		},
 	}
-	localStore[2] = &model.BookDetail{
-		ID:              2,
-		Title:           "Book 2",
-		AvailableCopies: 10,
-	}
-	localStore[3] = &model.BookDetail{
-		ID:              3,
-		Title:           "Book 3",
-		AvailableCopies: 10,
-	}
-	localStore[4] = &model.BookDetail{
-		ID:              4,
-		Title:           "Book 4",
-		AvailableCopies: 10,
-	}
-	localStore[5] = &model.BookDetail{
-		ID:              5,
-		Title:           "Book 5",
-		AvailableCopies: 10,
+	var localStore = make(map[string]*model.BookDetail)
+	for _, book := range books {
+		// lowering the title to keep it as key
+		title := strings.ToLower(book.Title)
+		localStore[title] = book
 	}
 	return &LocalStore{
 		store: localStore,
