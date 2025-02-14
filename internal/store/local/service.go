@@ -11,6 +11,7 @@ import (
 
 type LocalStore struct {
 	books map[string]*model.BookDetails // stores the Books key as book tiltle
+	loans map[string]*model.LoanDetails // stores the loans key as
 }
 
 func (l *LocalStore) GetAllBookDetails(ctx context.Context) ([]*model.BookDetails, error) {

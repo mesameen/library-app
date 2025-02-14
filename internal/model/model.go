@@ -13,6 +13,7 @@ type BookDetails struct {
 
 // LoanDetails represents loan of the book
 type LoanDetails struct {
+	ID             int       //
 	NameOfBorrower string    // Name of borrower
 	LoanDate       time.Time // Date when the book was borrowed
 	ReturnDate     time.Time // Date when the book should be returned
