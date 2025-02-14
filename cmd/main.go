@@ -13,6 +13,7 @@ import (
 	"github.com/test/library-app/internal/config"
 	"github.com/test/library-app/internal/handler"
 	"github.com/test/library-app/internal/logger"
+	"github.com/test/library-app/internal/store"
 )
 
 func main() {
@@ -26,9 +27,20 @@ func main() {
 	// initializing the gin router
 	router := gin.Default()
 
+	// Initializing the store
+	store, err := store.NewStore()
+	if err != nil {
+		logger.Panicf("failed to initialize store. Error:%v", err)
+	}
+	defer store.Close()
+
 	// Actual handler to handles the requests
-	handler := handler.NewHandler()
+	handler := handler.NewHandler(store)
 	router.GET("/", handler.Hello)
+	router.GET("/book", handler.GetBook)
+	router.POST("/borrow", handler.BorrowBook)
+	router.POST("/extend", handler.ExtendBook)
+	router.POST("/return", handler.ReturnBook)
 
 	// Attaching the request handlers, port etc to the server
 	server := http.Server{

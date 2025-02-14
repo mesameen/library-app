@@ -56,3 +56,7 @@ func Errorf(format string, vals ...interface{}) {
 func Warnf(format string, vals ...interface{}) {
 	Log().Warn(fmt.Sprintf(format, vals...))
 }
+
+func Panicf(format string, vals ...interface{}) {
+	Log().Panic(fmt.Sprintf(format, vals...))
+}

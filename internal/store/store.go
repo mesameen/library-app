@@ -9,6 +9,7 @@ import (
 )
 
 type Store interface {
+	Close() error
 }
 
 func NewStore() (Store, error) {
