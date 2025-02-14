@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/test/library-app/internal/config"
@@ -11,7 +12,9 @@ import (
 
 type Store interface {
 	// GetBookDetails retreves book details from store
-	GetBookDetails(title string) (*model.BookDetail, error)
+	GetBookDetails(ctx context.Context, title string) (*model.BookDetails, error)
+	// GetAllBookDetails retreves book details from store
+	GetAllBookDetails(ctx context.Context) ([]*model.BookDetails, error)
 	Close() error
 }
 

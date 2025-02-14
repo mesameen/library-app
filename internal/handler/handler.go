@@ -32,7 +32,7 @@ func (h *Handler) GetBook(c *gin.Context) {
 	if len(title) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "title is mandatory"})
 	}
-	det, err := h.repo.GetBookDetails(title)
+	det, err := h.repo.GetBookDetails(c, title)
 	if err != nil {
 		fmt.Println(errors.Is(err, model.ErrNotFound))
 		// if notfound needs to return the specific error code and details

@@ -6,7 +6,7 @@ import (
 )
 
 // BookDetail represents book details
-type BookDetail struct {
+type BookDetails struct {
 	Title           string // Unique Identifier for the book
 	AvailableCopies int    // No of available copies of the book that can be loaned
 }

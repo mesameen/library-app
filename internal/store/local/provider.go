@@ -8,7 +8,7 @@ import (
 
 // InitLocalStore initializes with some book details
 func InitLocalStore() (*LocalStore, error) {
-	books := []*model.BookDetail{
+	books := []*model.BookDetails{
 		{
 			Title:           "Book_1",
 			AvailableCopies: 10,
@@ -30,13 +30,13 @@ func InitLocalStore() (*LocalStore, error) {
 			AvailableCopies: 10,
 		},
 	}
-	var localStore = make(map[string]*model.BookDetail)
+	var localStore = make(map[string]*model.BookDetails)
 	for _, book := range books {
 		// lowering the title to keep it as key
 		title := strings.ToLower(book.Title)
 		localStore[title] = book
 	}
 	return &LocalStore{
-		store: localStore,
+		books: localStore,
 	}, nil
 }
