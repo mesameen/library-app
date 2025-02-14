@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/test/library-app/internal/logger"
 	"github.com/test/library-app/internal/model"
@@ -47,6 +48,22 @@ func (l *LocalStore) AddLoan(ctx context.Context, det *model.LoanDetails) (int, 
 
 	logger.Infof("Loan entry added for book title: %s", det.Title)
 	return det.ID, nil
+}
+
+// ExtendLoan by given value
+func (l *LocalStore) ExtendLoan(ctx context.Context, loanID int) (*model.LoanDetails, error) {
+	loan, ok := l.loans[loanID]
+	if !ok {
+		// If requested loan isn't presents returning error with info
+		err := fmt.Errorf("loan isn't %d isn't presents", loanID)
+		// wrapping with NotFound error to identify the error type by caller or middleware
+		return nil, fmt.Errorf("%v %w", err, model.ErrNotFound)
+	}
+	returnTime := time.Unix(loan.ReturnDate, 0)
+	// extending 3 weeks
+	loan.ReturnDate = returnTime.Add(24 * 7 * 3 * time.Hour).Unix()
+	logger.Infof("Loan extended for book title: %s", loan.Title)
+	return loan, nil
 }
 
 // Close clears the memory

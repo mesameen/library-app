@@ -39,7 +39,7 @@ func main() {
 	router.GET("/", handler.Hello)
 	router.GET("/book/:title", handler.GetBook)
 	router.POST("/borrow", handler.BorrowBook)
-	router.POST("/extend", handler.ExtendLoan)
+	router.POST("/extend/:id", handler.ExtendLoan)
 	router.POST("/return", handler.ReturnBook)
 
 	// Attaching the request handlers, port etc to the server
