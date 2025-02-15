@@ -12,7 +12,7 @@ type CommonConfiguration struct {
 	ReadTimeoutInSec  int    `default:"15"`
 	WriteTimeoutInSec int    `default:"15"`
 	IdleTimeoutInSec  int    `deault:"60"`
-	StoreType         string `default:"postgres"`
+	StoreType         string `default:"local"`
 }
 
 type LogConfiguration struct {
