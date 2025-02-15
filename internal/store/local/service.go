@@ -42,7 +42,13 @@ func (l *LocalStore) AddLoan(ctx context.Context, det *model.LoanDetails) (int, 
 	l.loans[det.ID] = det
 
 	// reducing one from the avalilablecopies of the title
-	bookDet := l.books[strings.ToLower(det.Title)]
+	bookDet, ok := l.books[strings.ToLower(det.Title)]
+	if !ok {
+		// If requested title isn't presents returning error with info,
+		err := fmt.Errorf("book with title '%s' isn't presents", det.Title)
+		// wrapping with NotFound error to identify the error type by caller or middleware
+		return 0, fmt.Errorf("%v %w", err, model.ErrNotFound)
+	}
 	// reducing one from available copies
 	bookDet.AvailableCopies -= 1
 
@@ -64,6 +70,33 @@ func (l *LocalStore) ExtendLoan(ctx context.Context, loanID int) (*model.LoanDet
 	loan.ReturnDate = returnTime.Add(24 * 7 * 3 * time.Hour).Unix()
 	logger.Infof("Loan extended for book title: %s", loan.Title)
 	return loan, nil
+}
+
+// ExtendLoan by given value
+func (l *LocalStore) ReturnBook(ctx context.Context, loanID int) error {
+	loan, ok := l.loans[loanID]
+	if !ok {
+		// If requested loan isn't presents returning error with info
+		err := fmt.Errorf("loan %d isn't presents", loanID)
+		// wrapping with NotFound error to identify the error type by caller or middleware
+		return fmt.Errorf("%v %w", err, model.ErrNotFound)
+	}
+	// reducing one from the avalilablecopies of the title
+	bookDet, ok := l.books[strings.ToLower(loan.Title)]
+	if !ok {
+		// If requested title isn't presents returning error with info,
+		err := fmt.Errorf("book with title '%s' isn't presents", loan.Title)
+		// wrapping with NotFound error to identify the error type by caller or middleware
+		return fmt.Errorf("%v %w", err, model.ErrNotFound)
+	}
+	// reducing one from available copies
+	bookDet.AvailableCopies += 1
+	logger.Infof("Title: %s is returned", loan.Title)
+
+	// removing the loan from cache since book is returned
+	delete(l.loans, loanID)
+	logger.Infof("title: %s returned", loan.Title)
+	return nil
 }
 
 // Close clears the memory

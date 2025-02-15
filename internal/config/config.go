@@ -25,16 +25,19 @@ var (
 	LogConfig    LogConfiguration
 )
 
-func LoadConfig() {
+func LoadConfig() error {
 	// loading common config
 	if err := envconfig.Process("", &CommonConfig); err != nil {
-		log.Panicf("Failed to load common config env %v", err)
+		log.Printf("Failed to load common config env %v\n", err)
+		return err
 	}
 	log.Printf("CommonConfig: %+v\n", CommonConfig)
 
 	// loading log config
 	if err := envconfig.Process("", &LogConfig); err != nil {
-		log.Panicf("Failed to load common log env %v", err)
+		log.Printf("Failed to load common log env %v\n", err)
+		return err
 	}
 	log.Printf("LogConfig: %+v\n", LogConfig)
+	return nil
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -18,7 +19,10 @@ import (
 
 func main() {
 	// loads config if any error in reading config panics the appl
-	config.LoadConfig()
+	err := config.LoadConfig()
+	if err != nil {
+		log.Panicf("%v", err)
+	}
 
 	// configures logger for an app
 	logger.InitLogger()
@@ -40,7 +44,7 @@ func main() {
 	router.GET("/book/:title", handler.GetBook)
 	router.POST("/borrow", handler.BorrowBook)
 	router.POST("/extend/:id", handler.ExtendLoan)
-	router.POST("/return", handler.ReturnBook)
+	router.POST("/return/:id", handler.ReturnBook)
 
 	// Attaching the request handlers, port etc to the server
 	server := http.Server{

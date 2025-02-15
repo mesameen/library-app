@@ -19,6 +19,8 @@ type Store interface {
 	AddLoan(ctx context.Context, det *model.LoanDetails) (int, error)
 	// Extends the loan
 	ExtendLoan(ctx context.Context, loanID int) (*model.LoanDetails, error)
+	// Retunrs a book
+	ReturnBook(ctx context.Context, loanID int) error
 	Close() error
 }
 

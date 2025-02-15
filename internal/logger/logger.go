@@ -21,7 +21,7 @@ func Log() *zap.Logger {
 }
 
 // InitLogger initializes the logger
-func InitLogger() {
+func InitLogger() error {
 	cfg := zap.NewDevelopmentConfig()
 	cfg.EncoderConfig.StacktraceKey = "stack"
 	cfg.EncoderConfig.EncodeTime = func(t time.Time, pae zapcore.PrimitiveArrayEncoder) {
@@ -33,12 +33,13 @@ func InitLogger() {
 	logger, err := cfg.Build()
 	if err != nil {
 		log.With(zap.Error(err)).Warn("Settings not applied to the logger")
-		return
+		return err
 	}
 	if log != nil {
 		log.Sync()
 	}
 	log = logger
+	return nil
 }
 
 func Debugf(format string, vals ...interface{}) {
