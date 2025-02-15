@@ -42,9 +42,6 @@ func (h *Handler) GetBook(c *gin.Context) {
 	if err != nil {
 		// if notfound needs to return the specific error code and details
 		if errors.Is(err, model.ErrNotFound) {
-			// unwrapping to send actual error
-			err = errors.Unwrap(err)
-			logger.Errorf("%s", err.Error())
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
@@ -74,10 +71,7 @@ func (h *Handler) BorrowBook(c *gin.Context) {
 	if err != nil {
 		// if notfound needs to return the specific error code and details
 		if errors.Is(err, model.ErrNotFound) {
-			// unwrapping to send actual error
-			uwErr := errors.Unwrap(err)
-			logger.Errorf("%s", uwErr.Error())
-			c.JSON(http.StatusNotFound, gin.H{"error": uwErr})
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
 		// rest of all errors falls under this category
@@ -127,10 +121,7 @@ func (h *Handler) ExtendLoan(c *gin.Context) {
 	if err != nil {
 		// if notfound needs to return the specific error code and details
 		if errors.Is(err, model.ErrNotFound) {
-			// unwrapping to send actual error
-			uwErr := errors.Unwrap(err)
-			logger.Errorf("%s", uwErr.Error())
-			c.JSON(http.StatusNotFound, gin.H{"error": uwErr})
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
 		// rest of all errors falls under this category
@@ -154,10 +145,7 @@ func (h *Handler) ReturnBook(c *gin.Context) {
 	if err != nil {
 		// if notfound needs to return the specific error code and details
 		if errors.Is(err, model.ErrNotFound) {
-			// unwrapping to send actual error
-			uwErr := errors.Unwrap(err)
-			logger.Errorf("%s", uwErr.Error())
-			c.JSON(http.StatusNotFound, gin.H{"error": uwErr.Error()})
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
 		// rest of all errors falls under this category

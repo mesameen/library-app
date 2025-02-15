@@ -12,7 +12,7 @@ handles library operations
 
 ## Test and Run
 
-`make run` : to up and run te application
+`make run`: to up and run the application
 
 `make test`: runs all test cases and show the result in html
 
@@ -37,6 +37,13 @@ curl --location --request GET 'localhost:3000/book/book_10'
 {
     "title": "Book_1",
     "available_copies": 4
+}
+```
+##### Failure
+`404 - Not Found`
+```json
+{
+    "error": "book with title 'book_10' isn't presents. not found"
 }
 ```
 
@@ -65,6 +72,19 @@ curl --location 'localhost:3000/borrow' \
     "return_date": 1740217122
 }
 ```
+##### Failure
+`404 - Not Found`
+```json
+{
+    "error": "book with title 'book_10' isn't presents. not found"
+}
+```
+`400 - Bad Request`
+```json
+{
+    "error": "NameOfBorrower or Title are missed in the request"
+}
+```
 
 ### ExtendLoan
 
@@ -83,6 +103,13 @@ curl --location --request POST 'localhost:3000/extend/1'
     "return_date": 1742031488
 }
 ```
+##### Failure
+`404 - Not Found`
+```json
+{
+    "error": "book with title 'book_10' isn't presents. not found"
+}
+```
 
 ### ReturnBook
 
@@ -98,5 +125,13 @@ curl --location --request POST 'localhost:3000/return/1'
 ```json
 {
     "message": "book returned"
+}
+```
+
+##### Failure
+`404 - Not Found`
+```json
+{
+    "error": "book with title 'book_10' isn't presents. not found"
 }
 ```

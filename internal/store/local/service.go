@@ -34,9 +34,9 @@ func (l *LocalStore) GetBookDetails(ctx context.Context, title string) (*model.B
 	book, ok := l.books[strings.ToLower(title)]
 	if !ok {
 		// If requested title isn't presents returning error with info,
-		err := fmt.Errorf("book with title '%s' isn't presents", title)
+		// err := fmt.Errorf("book with title '%s' isn't presents", title)
 		// wrapping with NotFound error to identify the error type by caller or middleware
-		return nil, fmt.Errorf("%v %w", err, model.ErrNotFound)
+		return nil, fmt.Errorf("book with title '%s' isn't presents. %w", title, model.ErrNotFound)
 	}
 	return book, nil
 }
