@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/test/library-app/internal/logger"
@@ -12,6 +13,7 @@ import (
 
 // making the members of store as private to avoid updating from elsewhere other than the allowed functions
 type LocalStore struct {
+	rmu   sync.RWMutex
 	books map[string]*model.BookDetails // stores the Books key as book tiltle
 	loans map[int]*model.LoanDetails    // stores the loans key as loan ID
 }
@@ -26,6 +28,8 @@ func (l *LocalStore) GetAllBookDetails(ctx context.Context) ([]*model.BookDetail
 
 // GetBookDetails retreves book details from store
 func (l *LocalStore) GetBookDetails(ctx context.Context, title string) (*model.BookDetails, error) {
+	l.rmu.RLock()
+	defer l.rmu.RUnlock()
 	// retireving it from store
 	book, ok := l.books[strings.ToLower(title)]
 	if !ok {
@@ -39,6 +43,8 @@ func (l *LocalStore) GetBookDetails(ctx context.Context, title string) (*model.B
 
 // AddLoan adds the loan details to store
 func (l *LocalStore) AddLoan(ctx context.Context, det *model.LoanDetails) (int, error) {
+	l.rmu.Lock()
+	defer l.rmu.Unlock()
 	l.loans[det.ID] = det
 
 	// reducing one from the avalilablecopies of the title
@@ -58,6 +64,8 @@ func (l *LocalStore) AddLoan(ctx context.Context, det *model.LoanDetails) (int, 
 
 // ExtendLoan by given value
 func (l *LocalStore) ExtendLoan(ctx context.Context, loanID int) (*model.LoanDetails, error) {
+	l.rmu.Lock()
+	defer l.rmu.Unlock()
 	loan, ok := l.loans[loanID]
 	if !ok {
 		// If requested loan isn't presents returning error with info
@@ -74,6 +82,8 @@ func (l *LocalStore) ExtendLoan(ctx context.Context, loanID int) (*model.LoanDet
 
 // ExtendLoan by given value
 func (l *LocalStore) ReturnBook(ctx context.Context, loanID int) error {
+	l.rmu.Lock()
+	defer l.rmu.Unlock()
 	loan, ok := l.loans[loanID]
 	if !ok {
 		// If requested loan isn't presents returning error with info
