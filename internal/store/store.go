@@ -8,6 +8,7 @@ import (
 	"github.com/test/library-app/internal/constants"
 	"github.com/test/library-app/internal/model"
 	"github.com/test/library-app/internal/store/local"
+	"github.com/test/library-app/internal/store/postgres"
 )
 
 type Store interface {
@@ -28,6 +29,8 @@ func NewStore() (Store, error) {
 	switch config.CommonConfig.StoreType {
 	case constants.LocalStore:
 		return local.InitLocalStore()
+	case constants.PostgresStore:
+		return postgres.InitPostgresStore()
 	default:
 		return nil, fmt.Errorf("unknown Store configured: %v", config.CommonConfig.StoreType)
 	}

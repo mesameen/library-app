@@ -7,11 +7,12 @@ import (
 )
 
 type CommonConfiguration struct {
+	AppName           string `default:"library-app"`
 	ServicePort       int    `default:"3000"`
 	ReadTimeoutInSec  int    `default:"15"`
 	WriteTimeoutInSec int    `default:"15"`
 	IdleTimeoutInSec  int    `deault:"60"`
-	StoreType         string `default:"local"`
+	StoreType         string `default:"postgres"`
 }
 
 type LogConfiguration struct {
@@ -20,9 +21,18 @@ type LogConfiguration struct {
 	Encoding string `default:"console"`
 }
 
+type PostgresConfiguration struct {
+	Host           string `default:"localhost:5432"`
+	PGUserName     string `default:"postgres"`
+	Password       string `default:"postgres"`
+	DBName         string `default:"postgresdb"`
+	BooksTableName string `default:"books"`
+}
+
 var (
-	CommonConfig CommonConfiguration
-	LogConfig    LogConfiguration
+	CommonConfig   CommonConfiguration
+	LogConfig      LogConfiguration
+	PostgresConfig PostgresConfiguration
 )
 
 func LoadConfig() error {
@@ -39,5 +49,13 @@ func LoadConfig() error {
 		return err
 	}
 	log.Printf("LogConfig: %+v\n", LogConfig)
+
+	// loading postgres config
+	if err := envconfig.Process("", &PostgresConfig); err != nil {
+		log.Printf("Failed to load common log env %v\n", err)
+		return err
+	}
+	log.Printf("PostgresConfig: %+v\n", PostgresConfig)
+
 	return nil
 }
