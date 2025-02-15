@@ -69,7 +69,7 @@ func (l *LocalStore) ExtendLoan(ctx context.Context, loanID int) (*model.LoanDet
 	loan, ok := l.loans[loanID]
 	if !ok {
 		// If requested loan isn't presents returning error with info
-		err := fmt.Errorf("loan isn't %d isn't presents", loanID)
+		err := fmt.Errorf("loan %d isn't presents", loanID)
 		// wrapping with NotFound error to identify the error type by caller or middleware
 		return nil, fmt.Errorf("%v %w", err, model.ErrNotFound)
 	}

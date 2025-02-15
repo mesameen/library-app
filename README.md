@@ -107,7 +107,7 @@ curl --location --request POST 'localhost:3000/extend/1'
 `404 - Not Found`
 ```json
 {
-    "error": "book with title 'book_10' isn't presents. not found"
+    "error": "loan 12 isn't presents not found"
 }
 ```
 
@@ -132,6 +132,6 @@ curl --location --request POST 'localhost:3000/return/1'
 `404 - Not Found`
 ```json
 {
-    "error": "book with title 'book_10' isn't presents. not found"
+    "error": "loan 12 isn't presents not found"
 }
 ```
