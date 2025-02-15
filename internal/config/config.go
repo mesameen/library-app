@@ -27,6 +27,7 @@ type PostgresConfiguration struct {
 	Password       string `default:"postgres"`
 	DBName         string `default:"postgresdb"`
 	BooksTableName string `default:"books"`
+	LoansTableName string `default:"loans"`
 }
 
 var (

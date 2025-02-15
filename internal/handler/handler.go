@@ -2,10 +2,8 @@ package handler
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
-	"sync/atomic"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -67,25 +65,7 @@ func (h *Handler) BorrowBook(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "NameOfBorrower or Title are missed in the request"})
 		return
 	}
-	det, err := h.repo.GetBookDetails(c, borrowReq.Title)
-	if err != nil {
-		// if notfound needs to return the specific error code and details
-		if errors.Is(err, model.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-			return
-		}
-		// rest of all errors falls under this category
-		logger.Errorf("fetching title %s failed. Error: %v", borrowReq.Title, err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	// if available copies are zero returning the error
-	if det.AvailableCopies == 0 {
-		c.JSON(http.StatusConflict, gin.H{"error": fmt.Sprintf("not enough copies of requested title %v", borrowReq.Title)})
-		return
-	}
 	loanDetails := &model.LoanDetails{
-		ID:             GetUniqueIncrementedID(),
 		NameOfBorrower: borrowReq.NameOfBorrower,
 		Title:          borrowReq.Title,
 		LoanDate:       time.Now().Unix(),
@@ -93,18 +73,15 @@ func (h *Handler) BorrowBook(c *gin.Context) {
 	}
 	_, err = h.repo.AddLoan(c, loanDetails)
 	if err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": fmt.Sprintf("not enough copies of requested title %v", borrowReq.Title)})
+		// if notfound needs to return the specific error code and details
+		if errors.Is(err, model.ErrNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusCreated, loanDetails)
-}
-
-var uniqueID int32
-
-func GetUniqueIncrementedID() int {
-	// incrementing uniqueID
-	atomic.AddInt32(&uniqueID, 1)
-	return int(uniqueID)
 }
 
 // ExtendLoan extends the loan of a book

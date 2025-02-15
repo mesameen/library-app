@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/test/library-app/internal/logger"
@@ -45,7 +46,24 @@ func (l *LocalStore) GetBookDetails(ctx context.Context, title string) (*model.B
 func (l *LocalStore) AddLoan(ctx context.Context, det *model.LoanDetails) (int, error) {
 	l.rmu.Lock()
 	defer l.rmu.Unlock()
-	l.loans[det.ID] = det
+	book, ok := l.books[strings.ToLower(det.Title)]
+	if !ok {
+		// If requested title isn't presents returning error with info,
+		err := fmt.Errorf("book with title '%s' isn't presents", det.Title)
+		// wrapping with NotFound error to identify the error type by caller or middleware
+		return 0, fmt.Errorf("%v %w", err, model.ErrNotFound)
+	}
+	// if available copies are zero returning the error
+	if book.AvailableCopies == 0 {
+		// If requested title isn't presents returning error with info,
+		err := fmt.Errorf("book with title '%s' are short of stock", det.Title)
+		// wrapping with NotFound error to identify the error type by caller or middleware
+		return 0, fmt.Errorf("%v %w", err, model.ErrNotFound)
+	}
+	// getting unique id
+	id := GetUniqueIncrementedID()
+	// setting in to details
+	l.loans[id] = det
 
 	// reducing one from the avalilablecopies of the title
 	bookDet, ok := l.books[strings.ToLower(det.Title)]
@@ -59,7 +77,15 @@ func (l *LocalStore) AddLoan(ctx context.Context, det *model.LoanDetails) (int, 
 	bookDet.AvailableCopies -= 1
 
 	logger.Infof("Loan entry added for book title: %s", det.Title)
-	return det.ID, nil
+	return id, nil
+}
+
+var uniqueID int32
+
+func GetUniqueIncrementedID() int {
+	// incrementing uniqueID
+	atomic.AddInt32(&uniqueID, 1)
+	return int(uniqueID)
 }
 
 // ExtendLoan by given value
