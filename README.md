@@ -25,3 +25,42 @@ handles library operations
 
 # Swagger
 [swagger](http://localhost:3000/swagger/index.html) doc is running here
+
+## Requests
+
+### GetBook
+
+#### Request
+
+```
+curl --location --request GET 'localhost:3000/book/book_10'
+```
+
+### BorrowBook
+
+#### Request
+
+```
+curl --location 'localhost:3000/borrow' \
+--header 'Content-Type: application/json' \
+--data '{
+    "title": "book_1",
+    "name_of_borrower": "sandeep"
+}'
+```
+
+### ExtendLoan
+
+#### Request
+
+```
+curl --location --request POST 'localhost:3000/extend/1'
+```
+
+### ReturnBook
+
+#### Request
+
+```
+curl --location --request POST 'localhost:3000/return/1'
+```
