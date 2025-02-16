@@ -62,6 +62,7 @@ func (l *LocalStore) AddLoan(ctx context.Context, det *model.LoanDetails) (int, 
 	}
 	// getting unique id
 	id := GetUniqueIncrementedID()
+	det.ID = id
 	// setting in to details
 	l.loans[id] = det
 

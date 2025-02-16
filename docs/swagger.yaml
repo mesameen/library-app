@@ -1,0 +1,174 @@
+basePath: /api/v1
+definitions:
+  model.BookDetails:
+    properties:
+      available_copies:
+        description: No of available copies of the book that can be loaned
+        type: integer
+      title:
+        description: Unique Identifier for the book
+        type: string
+    type: object
+  model.CustomError:
+    properties:
+      code:
+        type: integer
+      details:
+        type: string
+      error:
+        type: string
+    type: object
+  model.LoanDetails:
+    properties:
+      id:
+        description: auto generated at the backend
+        type: integer
+      loan_date:
+        description: Date when the book was borrowed, unix epoch format
+        type: integer
+      name_of_borrower:
+        description: Name of borrower
+        type: string
+      return_date:
+        description: Date when the book should be returned, unix epoch format
+        type: integer
+      title:
+        description: title of the book
+        type: string
+    type: object
+  model.LoanRequest:
+    properties:
+      name_of_borrower:
+        description: Name of borrower
+        type: string
+      title:
+        description: title of the book
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: Handles the digital library operation
+  title: Library App
+  version: "1.0"
+paths:
+  /book/{title}:
+    get:
+      description: GetBook retrieves the detail and available copies of a book title
+      parameters:
+      - description: Title of the book
+        in: path
+        name: title
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.BookDetails'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.CustomError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.CustomError'
+      summary: GetBook fetches the book details
+  /borrow:
+    post:
+      description: 'BorrowBook borrows a book from store (loan period: 4 weeks) and
+        returns the details of a loan'
+      parameters:
+      - description: Loan Request
+        in: body
+        name: loanRequest
+        required: true
+        schema:
+          $ref: '#/definitions/model.LoanRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.LoanDetails'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.CustomError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.CustomError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.CustomError'
+      summary: BorrowBook borrows a book from store
+  /extend/{id}:
+    post:
+      description: ExtendLoan extends the loan of a book
+      parameters:
+      - description: Loan id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/model.LoanDetails'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.CustomError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.CustomError'
+      summary: ExtendLoan extends the loan of a book
+  /hello:
+    get:
+      description: testing api
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Hello
+          schema:
+            type: string
+      summary: hello
+      tags:
+      - hello
+  /return/{id}:
+    post:
+      description: ReturnBook returns the book
+      parameters:
+      - description: Loan id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/model.LoanDetails'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.CustomError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.CustomError'
+      summary: ReturnBook returns the book
+swagger: "2.0"

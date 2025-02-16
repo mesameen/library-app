@@ -11,12 +11,20 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	_ "github.com/test/library-app/docs"
 	"github.com/test/library-app/internal/config"
 	"github.com/test/library-app/internal/handler"
 	"github.com/test/library-app/internal/logger"
 	"github.com/test/library-app/internal/store"
 )
 
+// @title 		Library App
+// @version 	1.0
+// @description Handles the digital library operation
+// @host 		localhost:3000
+// @basePath 	/api/v1
 func main() {
 	// loads config if any error in reading config panics the appl
 	err := config.LoadConfig()
@@ -40,11 +48,15 @@ func main() {
 
 	// Actual handler to handles the requests
 	handler := handler.NewHandler(store)
-	router.GET("/", handler.Hello)
-	router.GET("/book/:title", handler.GetBook)
-	router.POST("/borrow", handler.BorrowBook)
-	router.POST("/extend/:id", handler.ExtendLoan)
-	router.POST("/return/:id", handler.ReturnBook)
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	bookRouter := router.Group("/api/v1")
+	{
+		bookRouter.GET("/hello", handler.Hello)
+		bookRouter.GET("/book/:title", handler.GetBook)
+		bookRouter.POST("/borrow", handler.BorrowBook)
+		bookRouter.POST("/extend/:id", handler.ExtendLoan)
+		bookRouter.POST("/return/:id", handler.ReturnBook)
+	}
 
 	// Attaching the request handlers, port etc to the server
 	server := http.Server{

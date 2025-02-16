@@ -1,4 +1,4 @@
-MAINPATH = cmd/main.go
+MAINPATH = main.go
 
 .PHONY: run
 run:
@@ -7,3 +7,7 @@ run:
 .PHONY: test
 test:
 	go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out
+
+.PHONY: swag
+swag:
+	swag init

@@ -29,3 +29,10 @@ type LoanRequest struct {
 var (
 	ErrNotFound = errors.New("not found")
 )
+
+// CustomError
+type CustomError struct {
+	Error   string `json:"error"`
+	Details string `json:"details"`
+	Code    int    `json:"code"`
+}

@@ -23,46 +23,97 @@ func NewHandler(s store.Store) *Handler {
 	}
 }
 
-// Test api
+// Hello godoc
+//
+//	@Tags 			hello
+//	@Summary 		hello
+//	@Description 	testing api
+//	@Produce 		plain
+//	@Success 		200	{string}	string	"Hello"
+//	@Router 		/hello	[get]
 func (h *Handler) Hello(c *gin.Context) {
 	c.String(http.StatusOK, "Hello, John")
 }
 
+// GetBook godoc
+//
+//	@Summary 		GetBook fetches the book details
+//	@Description 	GetBook retrieves the detail and available copies of a book title
+//	@Param			title	path	string	true	"Title of the book"
+//	@Produce 		json
+//	@Success 		200	{object}	model.BookDetails
+//	@Failure 		404	{object}	model.CustomError
+//	@Failure 		500	{object}	model.CustomError
+//	@Router 		/book/{title}	[get]
+//
 // GetBook retrieves the detail and available copies of a book title
 func (h *Handler) GetBook(c *gin.Context) {
 	title := c.Param("title")
 	if len(title) == 0 {
 		logger.Errorf("title is mandatory")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "title is mandatory"})
+		customError := &model.CustomError{
+			Error: "title is mandatory",
+			Code:  http.StatusBadRequest,
+		}
+		c.JSON(http.StatusBadRequest, customError)
 		return
 	}
 	det, err := h.repo.GetBookDetails(c, title)
 	if err != nil {
 		// if notfound needs to return the specific error code and details
 		if errors.Is(err, model.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			customError := &model.CustomError{
+				Error: "title is mandatory",
+				Code:  http.StatusBadRequest,
+			}
+			c.JSON(http.StatusNotFound, customError)
 			return
 		}
 		logger.Errorf("fetching title %s failed. Error: %v", title, err)
 		// rest of all errors falls under this category
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		customError := &model.CustomError{
+			Error: err.Error(),
+			Code:  http.StatusBadRequest,
+		}
+		c.JSON(http.StatusInternalServerError, customError)
 		return
 	}
 	c.JSON(http.StatusOK, det)
 }
 
+// BorrowBook godoc
+//
+//	@Summary 		BorrowBook borrows a book from store
+//	@Description 	BorrowBook borrows a book from store (loan period: 4 weeks) and returns the details of a loan
+//	@Param			loanRequest	body	model.LoanRequest	true "Loan Request"
+//	@Consume 		json	model.LoanRequest
+//	@Produce 		json
+//	@Success 		201	{object}	model.LoanDetails
+//	@Failure 		404	{object}	model.CustomError
+//	@Failure 		400	{object}	model.CustomError
+//	@Failure 		500	{object}	model.CustomError
+//	@Router 		/borrow	[post]
+//
 // BorrowBook borrows a book from store (loan period: 4 weeks) and returns the details of a loan
 func (h *Handler) BorrowBook(c *gin.Context) {
 	var borrowReq model.LoanRequest
 	err := c.BindJSON(&borrowReq)
 	if err != nil {
 		logger.Errorf("Failed to unamrshal the request body: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		customError := &model.CustomError{
+			Error: "internal server error",
+			Code:  http.StatusInternalServerError,
+		}
+		c.JSON(http.StatusInternalServerError, customError)
 		return
 	}
 	if borrowReq.NameOfBorrower == "" || borrowReq.Title == "" {
 		logger.Errorf("NameOfBorrower & Title are mandatory to borrow a a book.")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "NameOfBorrower or Title are missed in the request"})
+		customError := &model.CustomError{
+			Error: "NameOfBorrower or Title are missed in the request",
+			Code:  http.StatusBadRequest,
+		}
+		c.JSON(http.StatusBadRequest, customError)
 		return
 	}
 	loanDetails := &model.LoanDetails{
@@ -75,22 +126,46 @@ func (h *Handler) BorrowBook(c *gin.Context) {
 	if err != nil {
 		// if notfound needs to return the specific error code and details
 		if errors.Is(err, model.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			customError := &model.CustomError{
+				Error: err.Error(),
+				Code:  http.StatusConflict,
+			}
+			c.JSON(http.StatusNotFound, customError)
 			return
 		}
-		c.JSON(http.StatusConflict, gin.H{"error": "adding load failed"})
+		customError := &model.CustomError{
+			Error: "adding loan failed",
+			Code:  http.StatusConflict,
+		}
+		c.JSON(http.StatusConflict, customError)
 		return
 	}
 	c.JSON(http.StatusCreated, loanDetails)
 }
 
+// ExtendLoan godoc
+//
+//	@Summary 		ExtendLoan extends the loan of a book
+//	@Description 	ExtendLoan extends the loan of a book
+//	@Param			id	path	int	true	"Loan id"
+//	@Consume 		json	model.LoanRequest
+//	@Produce 		json
+//	@Success 		202	{object}	model.LoanDetails
+//	@Failure 		404	{object}	model.CustomError
+//	@Failure 		400	{object}	model.CustomError
+//	@Router 		/extend/{id}	[post]
+//
 // ExtendLoan extends the loan of a book
 func (h *Handler) ExtendLoan(c *gin.Context) {
 	id := c.Param("id")
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
 		logger.Errorf("invalid id %s to update loan", id)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "id is mandatory"})
+		customError := &model.CustomError{
+			Error: "id is mandatory",
+			Code:  http.StatusBadRequest,
+		}
+		c.JSON(http.StatusBadRequest, customError)
 		return
 	}
 	// extenidng loan
@@ -98,36 +173,67 @@ func (h *Handler) ExtendLoan(c *gin.Context) {
 	if err != nil {
 		// if notfound needs to return the specific error code and details
 		if errors.Is(err, model.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			customError := &model.CustomError{
+				Error: err.Error(),
+				Code:  http.StatusNotFound,
+			}
+			c.JSON(http.StatusNotFound, customError)
 			return
 		}
 		// rest of all errors falls under this category
 		logger.Errorf("fetching loan %d failed. Error: %v", idInt, err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "faile dto extend loan"})
+		customError := &model.CustomError{
+			Error: "failed to extend loan",
+			Code:  http.StatusBadRequest,
+		}
+		c.JSON(http.StatusInternalServerError, customError)
 		return
 	}
 	c.JSON(http.StatusAccepted, gin.H{"return_date": loan.ReturnDate, "message": "loan got extended to 3 weeks"})
 }
 
+// ReturnBook godoc
+//
+//	@Summary 		ReturnBook returns the book
+//	@Description 	ReturnBook returns the book
+//	@Param			id	path	int	true	"Loan id"
+//	@Produce 		json
+//	@Success 		202	{object}	model.LoanDetails
+//	@Failure 		404	{object}	model.CustomError
+//	@Failure 		400	{object}	model.CustomError
+//	@Router 		/return/{id}	[post]
+//
 // ReturnBook returns the book
 func (h *Handler) ReturnBook(c *gin.Context) {
 	id := c.Param("id")
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
 		logger.Errorf("invalid id %s to update loan", id)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "id is mandatory"})
+		customError := &model.CustomError{
+			Error: "id is mandatory",
+			Code:  http.StatusBadRequest,
+		}
+		c.JSON(http.StatusBadRequest, customError)
 		return
 	}
 	err = h.repo.ReturnBook(c, idInt)
 	if err != nil {
 		// if notfound needs to return the specific error code and details
 		if errors.Is(err, model.ErrNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			customError := &model.CustomError{
+				Error: err.Error(),
+				Code:  http.StatusNotFound,
+			}
+			c.JSON(http.StatusNotFound, customError)
 			return
 		}
 		// rest of all errors falls under this category
 		logger.Errorf("fetching loan %d failed. Error: %v", idInt, err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to return a book"})
+		customError := &model.CustomError{
+			Error: "failed to return a book",
+			Code:  http.StatusInternalServerError,
+		}
+		c.JSON(http.StatusInternalServerError, customError)
 		return
 	}
 	c.JSON(http.StatusAccepted, gin.H{"message": "book returned"})

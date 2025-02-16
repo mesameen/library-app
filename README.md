@@ -18,7 +18,7 @@ handles library operations
 
 ## Config
 
-`StoreType` - Defines type of store going to use in this app values: local, postgres etc. Based on this value Store can be created during the bootup.
+`StoreType` - Defines type of store going to use in this app supported values: `local`, `postgres`. Based on this value Store can be created during the bootup.
 
 ## Requests
 
