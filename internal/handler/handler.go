@@ -78,7 +78,7 @@ func (h *Handler) BorrowBook(c *gin.Context) {
 			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		c.JSON(http.StatusConflict, gin.H{"error": "adding load failed"})
 		return
 	}
 	c.JSON(http.StatusCreated, loanDetails)
@@ -103,7 +103,7 @@ func (h *Handler) ExtendLoan(c *gin.Context) {
 		}
 		// rest of all errors falls under this category
 		logger.Errorf("fetching loan %d failed. Error: %v", idInt, err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "faile dto extend loan"})
 		return
 	}
 	c.JSON(http.StatusAccepted, gin.H{"return_date": loan.ReturnDate, "message": "loan got extended to 3 weeks"})
@@ -127,7 +127,7 @@ func (h *Handler) ReturnBook(c *gin.Context) {
 		}
 		// rest of all errors falls under this category
 		logger.Errorf("fetching loan %d failed. Error: %v", idInt, err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to return a book"})
 		return
 	}
 	c.JSON(http.StatusAccepted, gin.H{"message": "book returned"})
