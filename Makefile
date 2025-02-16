@@ -11,3 +11,15 @@ test:
 .PHONY: swag
 swag:
 	swag init
+
+.PHONY: dockerbuild
+dockerbuild:
+	docker build -t mesameen/library-app .
+
+.PHONY: dockerpush
+dockerpush:
+	docker push mesameen/library-app
+
+.PHONY: dockerdeploy
+dockerdeploy:
+	docker compose up -d

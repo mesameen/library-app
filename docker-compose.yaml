@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  svc-greet:
+    image: docker.io/mesameen/library-app
+    ports:
+      - "3000:3000"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.05'
+          memory: 512M

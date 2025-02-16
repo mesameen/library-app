@@ -22,6 +22,8 @@ handles library operations
 
 `make test`: runs all test cases and show the result in html
 
+`make dockerdeploy`: instantly up and run as docker container
+
 
 # Swagger
 [swagger](http://localhost:3000/swagger/index.html) doc is running here
