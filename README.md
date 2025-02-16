@@ -20,6 +20,9 @@ handles library operations
 
 `StoreType` - Defines type of store going to use in this app supported values: `local`, `postgres`. Based on this value Store can be created during the bootup.
 
+# Swagger
+[swagger](http://localhost:3000/swagger/index.html#/default/post_return__id_) doc is running here
+
 ## Requests
 
 ### GetBook
