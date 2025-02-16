@@ -61,6 +61,9 @@ func (p *PostgresDB) AddLoan(ctx context.Context, det *model.LoanDetails) (int, 
 	err = tx.QueryRow(ctx, query, det.Title).Scan(&avalilableCopies)
 	if err != nil {
 		logger.Errorf("failed to fetch requested title from books table. Error: %v", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, fmt.Errorf("failed to find the title: %s. %w", det.Title, model.ErrNotFound)
+		}
 		return 0, err
 	}
 	// if available copies are zero returning the error

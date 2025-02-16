@@ -21,6 +21,8 @@ var reqHandler *handler.Handler
 func TestMain(m *testing.M) {
 	// loading configuration
 	config.LoadConfig()
+	// updating store type to local for unit testing
+	config.CommonConfig.StoreType = "local"
 	// initializing the store
 	store, err := store.NewStore()
 	assert.Nil(&testing.T{}, err)
