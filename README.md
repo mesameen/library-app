@@ -35,7 +35,7 @@ handles library operations
 #### Request
 
 ```
-curl --location --request GET 'localhost:3000/book/book_10'
+curl --location --request GET 'localhost:3000/api/v1/book/book_10'
 ```
 
 ### BorrowBook
@@ -56,7 +56,7 @@ curl --location 'localhost:3000/borrow' \
 #### Request
 
 ```
-curl --location --request POST 'localhost:3000/extend/1'
+curl --location --request POST 'localhost:3000/api/v1/extend/1'
 ```
 
 ### ReturnBook
@@ -64,5 +64,5 @@ curl --location --request POST 'localhost:3000/extend/1'
 #### Request
 
 ```
-curl --location --request POST 'localhost:3000/return/1'
+curl --location --request POST 'localhost:3000/api/v1/return/1'
 ```
