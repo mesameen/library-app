@@ -52,6 +52,28 @@ info:
   title: Library App
   version: "1.0"
 paths:
+  /book:
+    get:
+      description: GetAllBooks retrieves the detail and available copies of a book
+        title
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.BookDetails'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.CustomError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.CustomError'
+      summary: GetAllBooks fetches the book details
   /book/{title}:
     get:
       description: GetBook retrieves the detail and available copies of a book title

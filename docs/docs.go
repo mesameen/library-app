@@ -15,6 +15,38 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/book": {
+            "get": {
+                "description": "GetAllBooks retrieves the detail and available copies of a book title",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "GetAllBooks fetches the book details",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.BookDetails"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/model.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.CustomError"
+                        }
+                    }
+                }
+            }
+        },
         "/book/{title}": {
             "get": {
                 "description": "GetBook retrieves the detail and available copies of a book title",

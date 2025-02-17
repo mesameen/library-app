@@ -30,6 +30,16 @@ handles library operations
 
 ## Requests
 
+### GetAllBooks
+
+#### Request
+
+```
+curl -X 'GET' \
+  'http://localhost:3000/api/v1/book' \
+  -H 'accept: application/json'
+```
+
 ### GetBook
 
 #### Request

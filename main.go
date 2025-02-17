@@ -52,6 +52,7 @@ func main() {
 	bookRouter := router.Group("/api/v1")
 	{
 		bookRouter.GET("/hello", handler.Hello)
+		bookRouter.GET("/book", handler.GetAllBooks)
 		bookRouter.GET("/book/:title", handler.GetBook)
 		bookRouter.POST("/borrow", handler.BorrowBook)
 		bookRouter.POST("/extend/:id", handler.ExtendLoan)
