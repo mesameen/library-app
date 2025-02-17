@@ -47,16 +47,6 @@ func (h *Handler) Hello(c *gin.Context) {
 //
 // GetAllBooks retrieves all books in store
 func (h *Handler) GetAllBooks(c *gin.Context) {
-	title := c.Param("title")
-	if len(title) == 0 {
-		logger.Errorf("title is mandatory")
-		customError := &model.CustomError{
-			Error: "title is mandatory",
-			Code:  http.StatusBadRequest,
-		}
-		c.JSON(http.StatusBadRequest, customError)
-		return
-	}
 	det, err := h.repo.GetAllBookDetails(c)
 	if err != nil {
 		// if notfound needs to return the specific error code and details
@@ -68,7 +58,6 @@ func (h *Handler) GetAllBooks(c *gin.Context) {
 			c.JSON(http.StatusNotFound, customError)
 			return
 		}
-		logger.Errorf("fetching title %s failed. Error: %v", title, err)
 		// rest of all errors falls under this category
 		customError := &model.CustomError{
 			Error: err.Error(),
