@@ -20,7 +20,7 @@ type LocalStore struct {
 }
 
 func (l *LocalStore) GetAllBookDetails(ctx context.Context) ([]*model.BookDetails, error) {
-	books := make([]*model.BookDetails, len(l.books))
+	books := make([]*model.BookDetails, 0)
 	for _, book := range l.books {
 		books = append(books, book)
 	}
