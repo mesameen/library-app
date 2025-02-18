@@ -24,6 +24,7 @@ handles library operations
 
 `make dockerdeploy`: instantly up and run as docker container
 
+`make helminstall`: deploys the application in kubernetes environment
 
 # Swagger
 [swagger](http://localhost:3000/swagger/index.html) doc is running here
