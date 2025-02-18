@@ -1,0 +1,121 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "library-app.fullname" . }}
+  labels:
+    {{- include "library-app.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "library-app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "library-app.labels" . | nindent 8 }}
+	{{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "library-app.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          env:
+            - name: APPNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: SERVICEPORT
+              value: "{{ .Values.common.serviceport }}"
+            - name: READTIMEOUTINSEC
+              value: "{{ .Values.common.readtimeoutinsec }}"
+            - name: WRITETIMEOUTINSEC
+              value: "{{ .Values.common.writetimeoutinsec }}"
+            - name: IDLETIMEOUTINSEC
+              value: "{{ .Values.common.idletimeoutinsec }}"
+            - name: STORETYPE
+              value: {{ .Values.common.storetype }}
+            - name: LEVEL
+              value: "{{ .Values.log.level }}"
+            - name: FORMAT
+              value: {{ .Values.log.format }}
+            - name: ENCODING
+              value: {{ .Values.log.encoding }}
+            - name: HOST
+              value: {{ .Values.postgres.host }}
+              # valueFrom:
+              #   secretKeyRef:
+              #     name: {{ .Values.postgres.secret}}
+              #     key: hosts
+            - name: PGUSERNAME
+              value: {{ .Values.postgres.pgusername }}
+              # valueFrom:
+              #   secretKeyRef:
+              #     name: {{ .Values.postgres.secret}}
+              #     key: username
+            - name: PASSWORD
+              value: {{ .Values.postgres.password }}
+              # valueFrom:
+              #   secretKeyRef:
+              #     name: {{ .Values.postgres.secret}}
+              #     key: password
+            - name: DBNAME
+              value: {{ .Values.postgres.dbname }}
+              # valueFrom:
+              #   secretKeyRef:
+              #     name: {{ .Values.postgres.secret}}
+              #     key: database
+            - name: BOOKSTABLENAME
+              value: {{ .Values.postgres.bookstablename }}
+            - name: LOANSTABLENAME
+              value: {{ .Values.postgres.loanstablename }}
+          livenessProbe:
+            httpGet:
+              path: /live
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

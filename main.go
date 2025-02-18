@@ -48,6 +48,10 @@ func main() {
 
 	// Actual handler to handles the requests
 	handler := handler.NewHandler(store)
+	// to handle liveness and readyness requests
+	router.GET("/live", handler.Live)
+	router.GET("/health", handler.Health)
+	// to serve swagger files
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	bookRouter := router.Group("/api/v1")
 	{

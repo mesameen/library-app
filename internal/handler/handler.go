@@ -23,6 +23,14 @@ func NewHandler(s store.Store) *Handler {
 	}
 }
 
+func (h *Handler) Live(c *gin.Context) {
+	c.String(http.StatusOK, "")
+}
+
+func (h *Handler) Health(c *gin.Context) {
+	c.String(http.StatusOK, "")
+}
+
 // Hello godoc
 //
 //	@Tags 			hello

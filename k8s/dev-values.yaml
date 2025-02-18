@@ -1,0 +1,2 @@
+common:
+  storetype: "postgres"   # local | postgres
