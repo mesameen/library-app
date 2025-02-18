@@ -105,7 +105,7 @@ func (h *Handler) GetBook(c *gin.Context) {
 		// if notfound needs to return the specific error code and details
 		if errors.Is(err, model.ErrNotFound) {
 			customError := &model.CustomError{
-				Error: "title is mandatory",
+				Error: err.Error(),
 				Code:  http.StatusNotFound,
 			}
 			c.JSON(http.StatusNotFound, customError)
@@ -152,7 +152,7 @@ func (h *Handler) BorrowBook(c *gin.Context) {
 	if borrowReq.NameOfBorrower == "" || borrowReq.Title == "" {
 		logger.Errorf("NameOfBorrower & Title are mandatory to borrow a a book.")
 		customError := &model.CustomError{
-			Error: "NameOfBorrower or Title are missed in the request",
+			Error: "NameOfBorrower or Title missed in the request",
 			Code:  http.StatusBadRequest,
 		}
 		c.JSON(http.StatusBadRequest, customError)

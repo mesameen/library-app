@@ -1,7 +1,7 @@
 # library-app
 
 ## About
-handles library operations
+handles e-library operations
 
 ## Third party libraries
 
@@ -18,16 +18,16 @@ handles library operations
 
 ## Test and Run
 
-`make run`: to up and run the application
+`make run`: to up and run the application in local system
 
 `make test`: runs all test cases and show the result in html
 
-`make dockerdeploy`: instantly up and run as docker container
+`make dockerdeploy`: up and run as docker container
 
 `make helminstall`: deploys the application in kubernetes environment
 
 # Swagger
-[swagger](http://localhost:3000/swagger/index.html) doc is running here
+[swagger](http://localhost:3000/swagger/index.html) renders swagger doc.
 
 ## Requests
 

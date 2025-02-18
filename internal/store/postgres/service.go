@@ -69,7 +69,7 @@ func (p *PostgresDB) AddLoan(ctx context.Context, det *model.LoanDetails) (int, 
 	// if available copies are zero returning the error
 	if avalilableCopies == 0 {
 		logger.Errorf("not enough copies of requested title %v", det.Title)
-		return 0, fmt.Errorf("not enough copies of requested title %v", det.Title)
+		return 0, fmt.Errorf("not enough copies of requested title %v. %w", det.Title, model.ErrNotFound)
 	}
 	// id := GetUniqueIncrementedID()
 	lastInsertId := 0
@@ -112,6 +112,7 @@ func (p *PostgresDB) ExtendLoan(ctx context.Context, loanID int) (*model.LoanDet
 		return nil, err
 	}
 	defer tx.Rollback(ctx)
+	// updating the return date
 	query := fmt.Sprintf(`UPDATE
 	%s SET return_date=return_date + interval '3 weeks'
 	WHERE id=$1
@@ -119,11 +120,13 @@ func (p *PostgresDB) ExtendLoan(ctx context.Context, loanID int) (*model.LoanDet
 	_, err = tx.Exec(ctx, query, loanID)
 	if err != nil {
 		logger.Errorf("Failed to execute update query for extending loan. Error: %v", err)
+		// if update failed with doesn't exists returning loan not found
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("failed to find loan: %d. %w", loanID, model.ErrNotFound)
 		}
 		return nil, err
 	}
+	// fetching the updated return date
 	query = fmt.Sprintf(`SELECT
 		return_date 
 	FROM %s 
@@ -152,6 +155,7 @@ func (p *PostgresDB) ReturnBook(ctx context.Context, loanID int) error {
 		return err
 	}
 	defer tx.Rollback(ctx)
+	// fetching title from loan
 	var title string
 	query := fmt.Sprintf(`SELECT
 		title
@@ -168,6 +172,7 @@ func (p *PostgresDB) ReturnBook(ctx context.Context, loanID int) error {
 		return err
 	}
 
+	// deleting the loan
 	query = fmt.Sprintf(`DELETE
 		FROM
 		%s

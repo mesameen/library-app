@@ -56,14 +56,14 @@ func (l *LocalStore) AddLoan(ctx context.Context, det *model.LoanDetails) (int, 
 	// if available copies are zero returning the error
 	if book.AvailableCopies == 0 {
 		// If requested title isn't presents returning error with info,
-		err := fmt.Errorf("book with title '%s' are short of stock", det.Title)
+		err := fmt.Errorf("book with title '%s' are out of stock", det.Title)
 		// wrapping with NotFound error to identify the error type by caller or middleware
 		return 0, fmt.Errorf("%v %w", err, model.ErrNotFound)
 	}
 	// getting unique id
 	id := GetUniqueIncrementedID()
 	det.ID = id
-	// setting in to details
+	// setting in to detailsshort
 	l.loans[id] = det
 
 	// reducing one from the avalilablecopies of the title
