@@ -2,7 +2,7 @@ version: '3'
 
 services:
   svc-greet:
-    image: docker.io/mesameen/library-app
+    image: docker.io/mesameen/library-app:v1.0.0-dev
     ports:
       - "3000:3000"
     deploy:
