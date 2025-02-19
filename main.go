@@ -55,12 +55,12 @@ func main() {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	bookRouter := router.Group("/api/v1")
 	{
-		bookRouter.GET("/hello", handler.Hello)
 		bookRouter.GET("/book", handler.GetAllBooks)
 		bookRouter.GET("/book/:title", handler.GetBook)
-		bookRouter.POST("/borrow", handler.BorrowBook)
-		bookRouter.POST("/extend/:id", handler.ExtendLoan)
-		bookRouter.POST("/return/:id", handler.ReturnBook)
+		bookRouter.GET("/loan", handler.GetAllLoans)
+		bookRouter.POST("/loan", handler.LoanBook)
+		bookRouter.POST("/loan/extend/:id", handler.ExtendLoan)
+		bookRouter.POST("/loan/return/:id", handler.ReturnBook)
 	}
 
 	// Attaching the request handlers, port etc to the server

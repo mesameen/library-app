@@ -43,16 +43,6 @@ func GetTestGinContext(w *httptest.ResponseRecorder) *gin.Context {
 	return c
 }
 
-func TestHello(t *testing.T) {
-	// creating response writer by calling httptest recorder
-	w := httptest.NewRecorder()
-	c := GetTestGinContext(w)
-
-	reqHandler.Hello(c)
-	assert.EqualValues(t, http.StatusOK, w.Code)
-	assert.EqualValues(t, "Hello, John", w.Body.String())
-}
-
 func TestGetBook(t *testing.T) {
 	// creating response writer by calling httptest recorder
 	w := httptest.NewRecorder()
@@ -96,7 +86,7 @@ func TestBorrowBook(t *testing.T) {
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(reqBytes))
 	defer c.Request.Body.Close()
 
-	reqHandler.BorrowBook(c)
+	reqHandler.LoanBook(c)
 	assert.EqualValues(t, http.StatusCreated, w.Code)
 
 	// failure case
@@ -109,7 +99,7 @@ func TestBorrowBook(t *testing.T) {
 	reqBytes, _ = json.Marshal(&req)
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(reqBytes))
 	defer c.Request.Body.Close()
-	reqHandler.BorrowBook(c)
+	reqHandler.LoanBook(c)
 	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
@@ -124,7 +114,7 @@ func TestExtendLoan(t *testing.T) {
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(reqBytes))
 	defer c.Request.Body.Close()
 
-	reqHandler.BorrowBook(c)
+	reqHandler.LoanBook(c)
 	assert.EqualValues(t, http.StatusCreated, w.Code)
 
 	// creating response writer by calling httptest recorder
@@ -168,7 +158,7 @@ func TestReturnBook(t *testing.T) {
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(reqBytes))
 	defer c.Request.Body.Close()
 
-	reqHandler.BorrowBook(c)
+	reqHandler.LoanBook(c)
 	assert.EqualValues(t, http.StatusCreated, w.Code)
 
 	// creating response writer by calling httptest recorder

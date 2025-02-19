@@ -45,7 +45,67 @@ func (p *PostgresDB) GetBookDetails(ctx context.Context, title string) (*model.B
 
 // GetAllBookDetails retreves book details from store
 func (p *PostgresDB) GetAllBookDetails(ctx context.Context) ([]*model.BookDetails, error) {
-	return nil, nil
+	query := fmt.Sprintf(`SELECT 
+		title, 
+		available_copies 
+		FROM %s
+	`, config.PostgresConfig.BooksTableName)
+	rows, err := p.DB.Query(ctx, query)
+	if err != nil {
+		logger.Errorf("Failed to fetch books. Error: %v", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("failed to fetch books. %w", model.ErrNotFound)
+		}
+		return nil, err
+	}
+	defer rows.Close()
+	books := make([]*model.BookDetails, 0)
+	for rows.Next() {
+		var book model.BookDetails
+		if err := rows.Scan(&book.Title, &book.AvailableCopies); err != nil {
+			logger.Errorf("Failed to scan bookdetails fetched from DB. Error: %v", err)
+			continue
+		}
+		books = append(books, &book)
+	}
+
+	return books, nil
+}
+
+// GetAllLoans retreves all loan details from store
+func (p *PostgresDB) GetAllLoans(ctx context.Context) ([]*model.LoanDetails, error) {
+	query := fmt.Sprintf(`SELECT 
+		id,
+		title, 
+		name_of_borrower,
+		loan_date,
+		return_date 
+		FROM %s
+	`, config.PostgresConfig.LoansTableName)
+	rows, err := p.DB.Query(ctx, query)
+	if err != nil {
+		logger.Errorf("Failed to fetch loans. Error: %v", err)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("failed to fetch books. %w", model.ErrNotFound)
+		}
+		return nil, err
+	}
+	defer rows.Close()
+	loans := make([]*model.LoanDetails, 0)
+	for rows.Next() {
+		var loan model.LoanDetails
+		var loanDate time.Time
+		var returnDate time.Time
+		if err := rows.Scan(&loan.ID, &loan.Title, &loan.NameOfBorrower, &loanDate, &returnDate); err != nil {
+			logger.Errorf("Failed to scan bookdetails fetched from DB. Error: %v", err)
+			continue
+		}
+		loan.LoanDate = loanDate.Unix()
+		loan.ReturnDate = returnDate.Unix()
+		loans = append(loans, &loan)
+	}
+
+	return loans, nil
 }
 
 // AddLoan adds the loan details to store
@@ -135,8 +195,8 @@ func (p *PostgresDB) ExtendLoan(ctx context.Context, loanID int) (*model.LoanDet
 	var returnDate time.Time
 	err = tx.QueryRow(ctx, query, loanID).Scan(&returnDate)
 	if err != nil {
-		logger.Errorf("failed to find updated loan: %d", loanID)
-		return nil, fmt.Errorf("failed to find updated loan: %d. %w", loanID, model.ErrNotFound)
+		logger.Errorf("failed to find a requested loan: %d to extend", loanID)
+		return nil, fmt.Errorf("failed to find a requested loan: %d to extend. %w", loanID, model.ErrNotFound)
 	}
 	if err = tx.Commit(ctx); err != nil {
 		logger.Errorf("Failed to commit transaction of extending loan. Error: %v", err)

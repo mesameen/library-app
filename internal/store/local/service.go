@@ -20,11 +20,23 @@ type LocalStore struct {
 }
 
 func (l *LocalStore) GetAllBookDetails(ctx context.Context) ([]*model.BookDetails, error) {
+	l.rmu.RLock()
+	defer l.rmu.RUnlock()
 	books := make([]*model.BookDetails, 0)
 	for _, book := range l.books {
 		books = append(books, book)
 	}
 	return books, nil
+}
+
+func (l *LocalStore) GetAllLoans(ctx context.Context) ([]*model.LoanDetails, error) {
+	l.rmu.RLock()
+	defer l.rmu.RUnlock()
+	loans := make([]*model.LoanDetails, 0)
+	for _, loan := range l.loans {
+		loans = append(loans, loan)
+	}
+	return loans, nil
 }
 
 // GetBookDetails retreves book details from store

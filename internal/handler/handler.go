@@ -31,18 +31,6 @@ func (h *Handler) Health(c *gin.Context) {
 	c.String(http.StatusOK, "")
 }
 
-// Hello godoc
-//
-//	@Tags 			hello
-//	@Summary 		hello
-//	@Description 	testing api
-//	@Produce 		plain
-//	@Success 		200	{string}	string	"Hello"
-//	@Router 		/hello	[get]
-func (h *Handler) Hello(c *gin.Context) {
-	c.String(http.StatusOK, "Hello, John")
-}
-
 // GetAllBooks godoc
 //
 //	@Summary 		GetAllBooks fetches the book details
@@ -72,6 +60,48 @@ func (h *Handler) GetAllBooks(c *gin.Context) {
 			Code:  http.StatusInternalServerError,
 		}
 		c.JSON(http.StatusInternalServerError, customError)
+		return
+	}
+	c.JSON(http.StatusOK, det)
+}
+
+// GetAllLoans godoc
+//
+//	@Summary 		GetAllLoans fetches the loan details
+//	@Description 	GetAllLoans retrieves the detail of all loans
+//	@Produce 		json
+//	@Success 		200	{array}		model.LoanDetails
+//	@Failure 		404	{object}	model.CustomError
+//	@Failure 		500	{object}	model.CustomError
+//	@Router 		/loan	[get]
+//
+// GetAllLoans retrieves all loans from store
+func (h *Handler) GetAllLoans(c *gin.Context) {
+	det, err := h.repo.GetAllLoans(c)
+	if err != nil {
+		// if notfound needs to return the specific error code and details
+		if errors.Is(err, model.ErrNotFound) {
+			customError := &model.CustomError{
+				Error: "zero loans available in store",
+				Code:  http.StatusNotFound,
+			}
+			c.JSON(http.StatusNotFound, customError)
+			return
+		}
+		// rest of all errors falls under this category
+		customError := &model.CustomError{
+			Error: err.Error(),
+			Code:  http.StatusInternalServerError,
+		}
+		c.JSON(http.StatusInternalServerError, customError)
+		return
+	}
+	if len(det) == 0 {
+		customError := &model.CustomError{
+			Error: "zero loans available in store",
+			Code:  http.StatusNotFound,
+		}
+		c.JSON(http.StatusNotFound, customError)
 		return
 	}
 	c.JSON(http.StatusOK, det)
@@ -123,10 +153,10 @@ func (h *Handler) GetBook(c *gin.Context) {
 	c.JSON(http.StatusOK, det)
 }
 
-// BorrowBook godoc
+// LoanBook godoc
 //
-//	@Summary 		BorrowBook borrows a book from store
-//	@Description 	BorrowBook borrows a book from store (loan period: 4 weeks) and returns the details of a loan
+//	@Summary 		LoanBook borrows a book from store
+//	@Description 	LoanBook borrows a book from store (loan period: 4 weeks) and returns the details of a loan
 //	@Param			loanRequest	body	model.LoanRequest	true "Loan Request"
 //	@Consume 		json	model.LoanRequest
 //	@Produce 		json
@@ -134,10 +164,10 @@ func (h *Handler) GetBook(c *gin.Context) {
 //	@Failure 		404	{object}	model.CustomError
 //	@Failure 		400	{object}	model.CustomError
 //	@Failure 		500	{object}	model.CustomError
-//	@Router 		/borrow	[post]
+//	@Router 		/loan	[post]
 //
-// BorrowBook borrows a book from store (loan period: 4 weeks) and returns the details of a loan
-func (h *Handler) BorrowBook(c *gin.Context) {
+// LoanBook borrows a book from store (loan period: 4 weeks) and returns the details of a loan
+func (h *Handler) LoanBook(c *gin.Context) {
 	var borrowReq model.LoanRequest
 	err := c.BindJSON(&borrowReq)
 	if err != nil {
@@ -162,7 +192,7 @@ func (h *Handler) BorrowBook(c *gin.Context) {
 		NameOfBorrower: borrowReq.NameOfBorrower,
 		Title:          borrowReq.Title,
 		LoanDate:       time.Now().Unix(),
-		ReturnDate:     time.Now().Add(24 * 7 * time.Hour).Unix(), // 7 days return period
+		ReturnDate:     time.Now().Add(4 * 7 * 24 * time.Hour).Unix(), // 4 weeks return period
 	}
 	_, err = h.repo.AddLoan(c, loanDetails)
 	if err != nil {
@@ -195,7 +225,7 @@ func (h *Handler) BorrowBook(c *gin.Context) {
 //	@Success 		202	{object}	model.LoanDetails
 //	@Failure 		404	{object}	model.CustomError
 //	@Failure 		400	{object}	model.CustomError
-//	@Router 		/extend/{id}	[post]
+//	@Router 		/loan/extend/{id}	[post]
 //
 // ExtendLoan extends the loan of a book
 func (h *Handler) ExtendLoan(c *gin.Context) {
@@ -243,7 +273,7 @@ func (h *Handler) ExtendLoan(c *gin.Context) {
 //	@Success 		202	{object}	model.LoanDetails
 //	@Failure 		404	{object}	model.CustomError
 //	@Failure 		400	{object}	model.CustomError
-//	@Router 		/return/{id}	[post]
+//	@Router 		/loan/return/{id}	[post]
 //
 // ReturnBook returns the book
 func (h *Handler) ReturnBook(c *gin.Context) {

@@ -49,12 +49,22 @@ curl -X 'GET' \
 curl --location --request GET 'localhost:3000/api/v1/book/book_10'
 ```
 
-### BorrowBook
+### GetAllLoans
 
 #### Request
 
 ```
-curl --location 'localhost:3000/borrow' \
+curl -X 'GET' \
+  'http://localhost:3000/api/v1/loan' \
+  -H 'accept: application/json'
+```
+
+### LoanBook
+
+#### Request
+
+```
+curl --location 'localhost:3000/loan' \
 --header 'Content-Type: application/json' \
 --data '{
     "title": "book_1",
@@ -67,7 +77,7 @@ curl --location 'localhost:3000/borrow' \
 #### Request
 
 ```
-curl --location --request POST 'localhost:3000/api/v1/extend/1'
+curl --location --request POST 'localhost:3000/api/v1/loan/extend/1'
 ```
 
 ### ReturnBook
@@ -75,5 +85,7 @@ curl --location --request POST 'localhost:3000/api/v1/extend/1'
 #### Request
 
 ```
-curl --location --request POST 'localhost:3000/api/v1/return/1'
+curl --location --request POST 'localhost:3000/api/v1/loan/return/1'
 ```
+
+Note: There is always a room for enhancement and short of features, feel free to mention if you got any I'll address. Thanks 😊

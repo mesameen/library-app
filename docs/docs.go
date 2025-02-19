@@ -85,13 +85,63 @@ const docTemplate = `{
                 }
             }
         },
-        "/borrow": {
-            "post": {
-                "description": "BorrowBook borrows a book from store (loan period: 4 weeks) and returns the details of a loan",
+        "/hello": {
+            "get": {
+                "description": "testing api",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "hello"
+                ],
+                "summary": "hello",
+                "responses": {
+                    "200": {
+                        "description": "Hello",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/loan": {
+            "get": {
+                "description": "GetAllLoans retrieves the detail of all loans",
                 "produces": [
                     "application/json"
                 ],
-                "summary": "BorrowBook borrows a book from store",
+                "summary": "GetAllLoans fetches the loan details",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/model.LoanDetails"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/model.CustomError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.CustomError"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "LoanBook borrows a book from store (loan period: 4 weeks) and returns the details of a loan",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "LoanBook borrows a book from store",
                 "parameters": [
                     {
                         "description": "Loan Request",
@@ -131,7 +181,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/extend/{id}": {
+        "/loan/extend/{id}": {
             "post": {
                 "description": "ExtendLoan extends the loan of a book",
                 "produces": [
@@ -169,27 +219,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/hello": {
-            "get": {
-                "description": "testing api",
-                "produces": [
-                    "text/plain"
-                ],
-                "tags": [
-                    "hello"
-                ],
-                "summary": "hello",
-                "responses": {
-                    "200": {
-                        "description": "Hello",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/return/{id}": {
+        "/loan/return/{id}": {
             "post": {
                 "description": "ReturnBook returns the book",
                 "produces": [

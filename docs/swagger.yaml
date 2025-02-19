@@ -99,9 +99,42 @@ paths:
           schema:
             $ref: '#/definitions/model.CustomError'
       summary: GetBook fetches the book details
-  /borrow:
+  /hello:
+    get:
+      description: testing api
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Hello
+          schema:
+            type: string
+      summary: hello
+      tags:
+      - hello
+  /loan:
+    get:
+      description: GetAllLoans retrieves the detail of all loans
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.LoanDetails'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.CustomError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.CustomError'
+      summary: GetAllLoans fetches the loan details
     post:
-      description: 'BorrowBook borrows a book from store (loan period: 4 weeks) and
+      description: 'LoanBook borrows a book from store (loan period: 4 weeks) and
         returns the details of a loan'
       parameters:
       - description: Loan Request
@@ -129,8 +162,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/model.CustomError'
-      summary: BorrowBook borrows a book from store
-  /extend/{id}:
+      summary: LoanBook borrows a book from store
+  /loan/extend/{id}:
     post:
       description: ExtendLoan extends the loan of a book
       parameters:
@@ -155,20 +188,7 @@ paths:
           schema:
             $ref: '#/definitions/model.CustomError'
       summary: ExtendLoan extends the loan of a book
-  /hello:
-    get:
-      description: testing api
-      produces:
-      - text/plain
-      responses:
-        "200":
-          description: Hello
-          schema:
-            type: string
-      summary: hello
-      tags:
-      - hello
-  /return/{id}:
+  /loan/return/{id}:
     post:
       description: ReturnBook returns the book
       parameters:
