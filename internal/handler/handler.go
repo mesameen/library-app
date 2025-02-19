@@ -231,6 +231,7 @@ func (h *Handler) LoanBook(c *gin.Context) {
 //
 // ExtendLoan extends the loan of a book
 func (h *Handler) ExtendLoan(c *gin.Context) {
+	// TODO: Request body be accepted with title and name_of_borrower check if any book already borrowed by same user reject if exists
 	id := c.Param("id")
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
@@ -263,7 +264,7 @@ func (h *Handler) ExtendLoan(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, customError)
 		return
 	}
-	c.JSON(http.StatusAccepted, gin.H{"return_date": loan.ReturnDate, "message": "loan got extended to 3 weeks"})
+	c.JSON(http.StatusAccepted, gin.H{"loanDetails": loan, "message": "loan got extended to 3 weeks"})
 }
 
 // ReturnBook godoc
@@ -290,7 +291,7 @@ func (h *Handler) ReturnBook(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, customError)
 		return
 	}
-	err = h.repo.ReturnBook(c, idInt)
+	loan, err := h.repo.ReturnBook(c, idInt)
 	if err != nil {
 		// if notfound needs to return the specific error code and details
 		if errors.Is(err, model.ErrNotFound) {
@@ -310,5 +311,5 @@ func (h *Handler) ReturnBook(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, customError)
 		return
 	}
-	c.JSON(http.StatusAccepted, gin.H{"message": "book returned"})
+	c.JSON(http.StatusAccepted, gin.H{"loanDetails": loan, "message": "book returned"})
 }

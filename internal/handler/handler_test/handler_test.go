@@ -51,7 +51,7 @@ func TestGetBook(t *testing.T) {
 	params := []gin.Param{
 		{
 			Key:   "title",
-			Value: "book_1",
+			Value: "alchemist",
 		},
 	}
 	c.Params = params
@@ -80,7 +80,7 @@ func TestBorrowBook(t *testing.T) {
 	c := GetTestGinContext(w)
 	req := model.LoanRequest{
 		NameOfBorrower: "test_user",
-		Title:          "book_1",
+		Title:          "alchemist",
 	}
 	reqBytes, _ := json.Marshal(&req)
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(reqBytes))
@@ -108,7 +108,7 @@ func TestExtendLoan(t *testing.T) {
 	c := GetTestGinContext(w)
 	req := model.LoanRequest{
 		NameOfBorrower: "test_user",
-		Title:          "book_1",
+		Title:          "alchemist",
 	}
 	reqBytes, _ := json.Marshal(&req)
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(reqBytes))
@@ -152,7 +152,7 @@ func TestReturnBook(t *testing.T) {
 	c := GetTestGinContext(w)
 	req := model.LoanRequest{
 		NameOfBorrower: "test_user",
-		Title:          "book_1",
+		Title:          "alchemist",
 	}
 	reqBytes, _ := json.Marshal(&req)
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(reqBytes))

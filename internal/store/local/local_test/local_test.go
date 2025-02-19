@@ -38,7 +38,7 @@ func TestGetAllBookDetails(t *testing.T) {
 
 func TestGetBookDetails(t *testing.T) {
 	// success case
-	book, err := localStore.GetBookDetails(ctx, "book_1")
+	book, err := localStore.GetBookDetails(ctx, "alchemist")
 	assert.Nil(t, err)
 	assert.NotNil(t, book)
 
@@ -53,7 +53,7 @@ func TestAddLoan(t *testing.T) {
 	loanID, err := localStore.AddLoan(ctx, &model.LoanDetails{
 		ID:             1,
 		NameOfBorrower: "test_user",
-		Title:          "Book_1",
+		Title:          "alchemist",
 		LoanDate:       time.Now().Unix(),
 		ReturnDate:     time.Now().Add(24 * time.Hour).Unix(),
 	})
@@ -87,12 +87,14 @@ func TestExtendLoan(t *testing.T) {
 
 func TestReturnBook(t *testing.T) {
 	// success case
-	err := localStore.ReturnBook(ctx, 1)
+	loan, err := localStore.ReturnBook(ctx, 1)
 	assert.Nil(t, err)
+	assert.NotNil(t, loan)
 
 	// failure case
-	err = localStore.ReturnBook(ctx, 10)
+	loan, err = localStore.ReturnBook(ctx, 10)
 	assert.NotNil(t, err)
+	assert.Nil(t, loan)
 }
 
 func TestClose(t *testing.T) {

@@ -125,7 +125,7 @@ func (l *LocalStore) ExtendLoan(ctx context.Context, loanID int) (*model.LoanDet
 }
 
 // ExtendLoan by given value
-func (l *LocalStore) ReturnBook(ctx context.Context, loanID int) error {
+func (l *LocalStore) ReturnBook(ctx context.Context, loanID int) (*model.LoanDetails, error) {
 	l.rmu.Lock()
 	defer l.rmu.Unlock()
 	loan, ok := l.loans[loanID]
@@ -133,11 +133,11 @@ func (l *LocalStore) ReturnBook(ctx context.Context, loanID int) error {
 		// If requested loan isn't presents returning error with info
 		err := fmt.Errorf("loan %d isn't presents", loanID)
 		// wrapping with NotFound error to identify the error type by caller or middleware
-		return fmt.Errorf("%v %w", err, model.ErrNotFound)
+		return nil, fmt.Errorf("%v %w", err, model.ErrNotFound)
 	}
 	if loan.Status == constants.Closed {
 		logger.Errorf("requested loan: %d already closed", loanID)
-		return fmt.Errorf("requested loan: %d already closed", loanID)
+		return nil, fmt.Errorf("requested loan: %d already closed", loanID)
 	}
 	// reducing one from the avalilablecopies of the title
 	bookDet, ok := l.books[strings.ToLower(loan.Title)]
@@ -145,7 +145,7 @@ func (l *LocalStore) ReturnBook(ctx context.Context, loanID int) error {
 		// If requested title isn't presents returning error with info,
 		err := fmt.Errorf("book with title '%s' isn't presents", loan.Title)
 		// wrapping with NotFound error to identify the error type by caller or middleware
-		return fmt.Errorf("%v %w", err, model.ErrNotFound)
+		return nil, fmt.Errorf("%v %w", err, model.ErrNotFound)
 	}
 	// reducing one from available copies
 	bookDet.AvailableCopies += 1
@@ -154,7 +154,7 @@ func (l *LocalStore) ReturnBook(ctx context.Context, loanID int) error {
 	// removing the loan from cache since book is returned
 	loan.Status = constants.Closed
 	logger.Infof("title: %s returned", loan.Title)
-	return nil
+	return loan, nil
 }
 
 // Close clears the memory

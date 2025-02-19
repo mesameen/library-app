@@ -170,13 +170,17 @@ func (p *PostgresDB) AddLoan(ctx context.Context, det *model.LoanDetails) (int, 
 
 // Extends the loan
 func (p *PostgresDB) ExtendLoan(ctx context.Context, loanID int) (*model.LoanDetails, error) {
+	det := model.LoanDetails{
+		ID: loanID,
+	}
 	query := fmt.Sprintf(`SELECT
+		name_of_borrower,
+		title,
 		status 
 	FROM %s 
 		WHERE id=$1 
 	`, config.PostgresConfig.LoansTableName)
-	var status string
-	err := p.DB.QueryRow(ctx, query, loanID).Scan(&status)
+	err := p.DB.QueryRow(ctx, query, loanID).Scan(&det.NameOfBorrower, &det.Title, &det.Status)
 	if err != nil {
 		logger.Errorf("failed to find a requested loan: %d to extend", loanID)
 		if errors.Is(err, sql.ErrNoRows) {
@@ -184,7 +188,7 @@ func (p *PostgresDB) ExtendLoan(ctx context.Context, loanID int) (*model.LoanDet
 		}
 		return nil, fmt.Errorf("failed to find a requested loan: %d to extend. %w", loanID, model.ErrNotFound)
 	}
-	if status == constants.Closed {
+	if det.Status == constants.Closed {
 		logger.Errorf("requested loan: %d already closed", loanID)
 		return nil, fmt.Errorf("requested loan: %d already closed", loanID)
 	}
@@ -225,35 +229,39 @@ func (p *PostgresDB) ExtendLoan(ctx context.Context, loanID int) (*model.LoanDet
 		logger.Errorf("Failed to commit transaction of extending loan. Error: %v", err)
 		return nil, err
 	}
-	return &model.LoanDetails{
-		ReturnDate: returnDate.Unix(),
-	}, nil
+	det.ReturnDate = returnDate.Unix()
+	return &det, nil
 }
 
 // Retunrs a book
-func (p *PostgresDB) ReturnBook(ctx context.Context, loanID int) error {
+func (p *PostgresDB) ReturnBook(ctx context.Context, loanID int) (*model.LoanDetails, error) {
+	det := model.LoanDetails{
+		ID: loanID,
+	}
 	query := fmt.Sprintf(`SELECT
+		name_of_borrower,
+		title,
 		status 
 	FROM %s 
 		WHERE id=$1 
 	`, config.PostgresConfig.LoansTableName)
-	var status string
-	err := p.DB.QueryRow(ctx, query, loanID).Scan(&status)
+	err := p.DB.QueryRow(ctx, query, loanID).Scan(&det.NameOfBorrower, &det.Title, &det.Status)
 	if err != nil {
 		logger.Errorf("failed to find a requested loan: %d to extend", loanID)
 		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("failed to find loan: %d. %w", loanID, model.ErrNotFound)
+			return nil, fmt.Errorf("failed to find loan: %d. %w", loanID, model.ErrNotFound)
 		}
-		return fmt.Errorf("failed to find a requested loan: %d to extend. %w", loanID, model.ErrNotFound)
+		return nil, fmt.Errorf("failed to find a requested loan: %d to extend. %w", loanID, model.ErrNotFound)
 	}
-	if status == constants.Closed {
+	if det.Status == constants.Closed {
 		logger.Errorf("requested loan: %d already closed", loanID)
-		return fmt.Errorf("requested loan: %d already closed", loanID)
+		return nil, fmt.Errorf("requested loan: %d already closed", loanID)
 	}
+
 	tx, err := p.DB.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		logger.Errorf("Failed to begin transaction. Error: %v", err)
-		return err
+		return nil, err
 	}
 	defer tx.Rollback(ctx)
 	// fetching title from loan
@@ -268,9 +276,9 @@ func (p *PostgresDB) ReturnBook(ctx context.Context, loanID int) error {
 	if err != nil {
 		logger.Errorf("Failed to execute get loan. Error: %v", err)
 		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("failed to find loan: %d. %w", loanID, model.ErrNotFound)
+			return nil, fmt.Errorf("failed to find loan: %d. %w", loanID, model.ErrNotFound)
 		}
-		return err
+		return nil, err
 	}
 
 	// deleting the loan
@@ -283,9 +291,9 @@ func (p *PostgresDB) ReturnBook(ctx context.Context, loanID int) error {
 	if err != nil {
 		logger.Errorf("Failed to execute update query for extending loan. Error: %v", err)
 		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("failed to find loan: %d. %w", loanID, model.ErrNotFound)
+			return nil, fmt.Errorf("failed to find loan: %d. %w", loanID, model.ErrNotFound)
 		}
-		return err
+		return nil, err
 	}
 	query = fmt.Sprintf(`UPDATE
 		%s SET available_copies=available_copies+1
@@ -297,15 +305,16 @@ func (p *PostgresDB) ReturnBook(ctx context.Context, loanID int) error {
 	if err != nil {
 		logger.Errorf("Failed to update  query for extending loan. Error: %v", err)
 		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("failed to find book: %d. %w", loanID, model.ErrNotFound)
+			return nil, fmt.Errorf("failed to find book: %d. %w", loanID, model.ErrNotFound)
 		}
-		return err
+		return nil, err
 	}
 	if err = tx.Commit(ctx); err != nil {
 		logger.Errorf("Failed to commit transaction of returning a book. Error: %v", err)
-		return err
+		return nil, err
 	}
-	return nil
+	det.Status = constants.Closed
+	return &det, nil
 }
 
 func (p *PostgresDB) Close() error {

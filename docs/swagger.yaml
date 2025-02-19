@@ -4,9 +4,11 @@ definitions:
     properties:
       available_copies:
         description: No of available copies of the book that can be loaned
+        example: 10
         type: integer
       title:
         description: Unique Identifier for the book
+        example: alchemist
         type: string
     type: object
   model.CustomError:
@@ -24,13 +26,15 @@ definitions:
         description: auto generated at the backend
         type: integer
       loan_date:
-        description: Date when the book was borrowed, unix epoch format
+        description: Date when the book was borrowed, unix epoch format. relavant
+          for api calls
         type: integer
       name_of_borrower:
         description: Name of borrower
         type: string
       return_date:
-        description: Date when the book should be returned, unix epoch format
+        description: Date when the book should be returned, unix epoch format. relavant
+          for api calls
         type: integer
       status:
         description: active | closed
@@ -42,10 +46,12 @@ definitions:
   model.LoanRequest:
     properties:
       name_of_borrower:
-        description: Name of borrower
+        description: 'binding: required'
+        example: john
         type: string
       title:
         description: title of the book
+        example: alchemist
         type: string
     type: object
 host: localhost:3000

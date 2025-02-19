@@ -10,23 +10,23 @@ import (
 func InitLocalStore() (*LocalStore, error) {
 	books := []*model.BookDetails{
 		{
-			Title:           "Book_1",
+			Title:           "Alchemist",
 			AvailableCopies: 3,
 		},
 		{
-			Title:           "Book_2",
+			Title:           "Atomic Habbits",
 			AvailableCopies: 10,
 		},
 		{
-			Title:           "Book_3",
+			Title:           "Sapiens",
 			AvailableCopies: 10,
 		},
 		{
-			Title:           "Book_4",
+			Title:           "Mocking Bird",
 			AvailableCopies: 10,
 		},
 		{
-			Title:           "Book_5",
+			Title:           "Animal Farm",
 			AvailableCopies: 10,
 		},
 	}

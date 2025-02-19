@@ -244,11 +244,13 @@ const docTemplate = `{
             "properties": {
                 "available_copies": {
                     "description": "No of available copies of the book that can be loaned",
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 10
                 },
                 "title": {
                     "description": "Unique Identifier for the book",
-                    "type": "string"
+                    "type": "string",
+                    "example": "alchemist"
                 }
             }
         },
@@ -274,7 +276,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "loan_date": {
-                    "description": "Date when the book was borrowed, unix epoch format",
+                    "description": "Date when the book was borrowed, unix epoch format. relavant for api calls",
                     "type": "integer"
                 },
                 "name_of_borrower": {
@@ -282,7 +284,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "return_date": {
-                    "description": "Date when the book should be returned, unix epoch format",
+                    "description": "Date when the book should be returned, unix epoch format. relavant for api calls",
                     "type": "integer"
                 },
                 "status": {
@@ -299,12 +301,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "name_of_borrower": {
-                    "description": "Name of borrower",
-                    "type": "string"
+                    "description": "binding: required",
+                    "type": "string",
+                    "example": "john"
                 },
                 "title": {
                     "description": "title of the book",
-                    "type": "string"
+                    "type": "string",
+                    "example": "alchemist"
                 }
             }
         }
