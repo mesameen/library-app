@@ -110,15 +110,10 @@ func (p *PostgresDB) GetAllLoans(ctx context.Context) ([]*model.LoanDetails, err
 
 // AddLoan adds the loan details to store
 func (p *PostgresDB) AddLoan(ctx context.Context, det *model.LoanDetails) (int, error) {
-	tx, err := p.DB.BeginTx(ctx, pgx.TxOptions{})
-	if err != nil {
-		logger.Errorf("failed to begin transaction. Error: %v", err)
-		return 0, err
-	}
-	defer tx.Rollback(ctx)
+	// checking available copies are there or not for the requested book title
 	query := fmt.Sprintf(`SELECT available_copies FROM %s WHERE LOWER(title)=LOWER($1)`, config.PostgresConfig.BooksTableName)
 	var avalilableCopies int
-	err = tx.QueryRow(ctx, query, det.Title).Scan(&avalilableCopies)
+	err := p.DB.QueryRow(ctx, query, det.Title).Scan(&avalilableCopies)
 	if err != nil {
 		logger.Errorf("failed to fetch requested title from books table. Error: %v", err)
 		if errors.Is(err, sql.ErrNoRows) {
@@ -131,6 +126,13 @@ func (p *PostgresDB) AddLoan(ctx context.Context, det *model.LoanDetails) (int, 
 		logger.Errorf("not enough copies of requested title %v", det.Title)
 		return 0, fmt.Errorf("not enough copies of requested title %v. %w", det.Title, model.ErrNotFound)
 	}
+
+	tx, err := p.DB.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		logger.Errorf("failed to begin transaction. Error: %v", err)
+		return 0, err
+	}
+	defer tx.Rollback(ctx)
 	// id := GetUniqueIncrementedID()
 	lastInsertId := 0
 	// inserting in to loans table
