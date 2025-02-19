@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/test/library-app/internal/config"
+	"github.com/test/library-app/internal/constants"
 	"github.com/test/library-app/internal/logger"
 	"github.com/test/library-app/internal/model"
 )
@@ -79,7 +80,8 @@ func (p *PostgresDB) GetAllLoans(ctx context.Context) ([]*model.LoanDetails, err
 		title, 
 		name_of_borrower,
 		loan_date,
-		return_date 
+		return_date,
+		status
 		FROM %s
 	`, config.PostgresConfig.LoansTableName)
 	rows, err := p.DB.Query(ctx, query)
@@ -96,7 +98,7 @@ func (p *PostgresDB) GetAllLoans(ctx context.Context) ([]*model.LoanDetails, err
 		var loan model.LoanDetails
 		var loanDate time.Time
 		var returnDate time.Time
-		if err := rows.Scan(&loan.ID, &loan.Title, &loan.NameOfBorrower, &loanDate, &returnDate); err != nil {
+		if err := rows.Scan(&loan.ID, &loan.Title, &loan.NameOfBorrower, &loanDate, &returnDate, &loan.Status); err != nil {
 			logger.Errorf("Failed to scan bookdetails fetched from DB. Error: %v", err)
 			continue
 		}
@@ -138,11 +140,11 @@ func (p *PostgresDB) AddLoan(ctx context.Context, det *model.LoanDetails) (int, 
 	// inserting in to loans table
 	query = fmt.Sprintf(`INSERT
 		INTO %s
-		(title, name_of_borrower, return_date)
-		VALUES ($1, $2, $3)
+		(title, name_of_borrower, return_date, status)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id
 	`, config.PostgresConfig.LoansTableName)
-	err = tx.QueryRow(ctx, query, det.Title, det.NameOfBorrower, time.Unix(det.ReturnDate, 0)).Scan(&lastInsertId)
+	err = tx.QueryRow(ctx, query, det.Title, det.NameOfBorrower, time.Unix(det.ReturnDate, 0), det.Status).Scan(&lastInsertId)
 	if err != nil {
 		logger.Errorf("failed to insert into loan. Error: %v", err)
 		return 0, err
@@ -168,6 +170,25 @@ func (p *PostgresDB) AddLoan(ctx context.Context, det *model.LoanDetails) (int, 
 
 // Extends the loan
 func (p *PostgresDB) ExtendLoan(ctx context.Context, loanID int) (*model.LoanDetails, error) {
+	query := fmt.Sprintf(`SELECT
+		status 
+	FROM %s 
+		WHERE id=$1 
+	`, config.PostgresConfig.LoansTableName)
+	var status string
+	err := p.DB.QueryRow(ctx, query, loanID).Scan(&status)
+	if err != nil {
+		logger.Errorf("failed to find a requested loan: %d to extend", loanID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("failed to find loan: %d. %w", loanID, model.ErrNotFound)
+		}
+		return nil, fmt.Errorf("failed to find a requested loan: %d to extend. %w", loanID, model.ErrNotFound)
+	}
+	if status == constants.Closed {
+		logger.Errorf("requested loan: %d already closed", loanID)
+		return nil, fmt.Errorf("requested loan: %d already closed", loanID)
+	}
+
 	tx, err := p.DB.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		logger.Errorf("Failed to begin transaction. Error: %v", err)
@@ -175,7 +196,7 @@ func (p *PostgresDB) ExtendLoan(ctx context.Context, loanID int) (*model.LoanDet
 	}
 	defer tx.Rollback(ctx)
 	// updating the return date
-	query := fmt.Sprintf(`UPDATE
+	query = fmt.Sprintf(`UPDATE
 	%s SET return_date=return_date + interval '3 weeks'
 	WHERE id=$1
 	`, config.PostgresConfig.LoansTableName)
@@ -211,6 +232,24 @@ func (p *PostgresDB) ExtendLoan(ctx context.Context, loanID int) (*model.LoanDet
 
 // Retunrs a book
 func (p *PostgresDB) ReturnBook(ctx context.Context, loanID int) error {
+	query := fmt.Sprintf(`SELECT
+		status 
+	FROM %s 
+		WHERE id=$1 
+	`, config.PostgresConfig.LoansTableName)
+	var status string
+	err := p.DB.QueryRow(ctx, query, loanID).Scan(&status)
+	if err != nil {
+		logger.Errorf("failed to find a requested loan: %d to extend", loanID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("failed to find loan: %d. %w", loanID, model.ErrNotFound)
+		}
+		return fmt.Errorf("failed to find a requested loan: %d to extend. %w", loanID, model.ErrNotFound)
+	}
+	if status == constants.Closed {
+		logger.Errorf("requested loan: %d already closed", loanID)
+		return fmt.Errorf("requested loan: %d already closed", loanID)
+	}
 	tx, err := p.DB.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		logger.Errorf("Failed to begin transaction. Error: %v", err)
@@ -219,7 +258,7 @@ func (p *PostgresDB) ReturnBook(ctx context.Context, loanID int) error {
 	defer tx.Rollback(ctx)
 	// fetching title from loan
 	var title string
-	query := fmt.Sprintf(`SELECT
+	query = fmt.Sprintf(`SELECT
 		title
 	FROM
 		%s
@@ -235,12 +274,12 @@ func (p *PostgresDB) ReturnBook(ctx context.Context, loanID int) error {
 	}
 
 	// deleting the loan
-	query = fmt.Sprintf(`DELETE
-		FROM
+	query = fmt.Sprintf(`UPDATE
 		%s
-		WHERE id=$1
+		SET status=$1
+		WHERE id=$2
 	`, config.PostgresConfig.LoansTableName)
-	_, err = tx.Exec(ctx, query, loanID)
+	_, err = tx.Exec(ctx, query, constants.Closed, loanID)
 	if err != nil {
 		logger.Errorf("Failed to execute update query for extending loan. Error: %v", err)
 		if errors.Is(err, sql.ErrNoRows) {

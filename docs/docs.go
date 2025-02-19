@@ -85,33 +85,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/hello": {
-            "get": {
-                "description": "testing api",
-                "produces": [
-                    "text/plain"
-                ],
-                "tags": [
-                    "hello"
-                ],
-                "summary": "hello",
-                "responses": {
-                    "200": {
-                        "description": "Hello",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/loan": {
             "get": {
                 "description": "GetAllLoans retrieves the detail of all loans",
                 "produces": [
                     "application/json"
                 ],
-                "summary": "GetAllLoans fetches the loan details",
+                "summary": "GetAllLoans fetches the all loan details",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -304,6 +284,10 @@ const docTemplate = `{
                 "return_date": {
                     "description": "Date when the book should be returned, unix epoch format",
                     "type": "integer"
+                },
+                "status": {
+                    "description": "active | closed",
+                    "type": "string"
                 },
                 "title": {
                     "description": "title of the book",

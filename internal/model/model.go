@@ -17,6 +17,7 @@ type LoanDetails struct {
 	Title          string `json:"title"`            // title of the book
 	LoanDate       int64  `json:"loan_date"`        // Date when the book was borrowed, unix epoch format
 	ReturnDate     int64  `json:"return_date"`      // Date when the book should be returned, unix epoch format
+	Status         string `json:"status"`           // active | closed
 }
 
 // LoanDetails request

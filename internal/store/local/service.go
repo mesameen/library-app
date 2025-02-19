@@ -8,6 +8,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/test/library-app/internal/constants"
 	"github.com/test/library-app/internal/logger"
 	"github.com/test/library-app/internal/model"
 )
@@ -112,6 +113,10 @@ func (l *LocalStore) ExtendLoan(ctx context.Context, loanID int) (*model.LoanDet
 		// wrapping with NotFound error to identify the error type by caller or middleware
 		return nil, fmt.Errorf("%v %w", err, model.ErrNotFound)
 	}
+	if loan.Status == constants.Closed {
+		logger.Errorf("requested loan: %d already closed", loanID)
+		return nil, fmt.Errorf("requested loan: %d already closed", loanID)
+	}
 	returnTime := time.Unix(loan.ReturnDate, 0)
 	// extending 3 weeks
 	loan.ReturnDate = returnTime.Add(24 * 7 * 3 * time.Hour).Unix()
@@ -130,6 +135,10 @@ func (l *LocalStore) ReturnBook(ctx context.Context, loanID int) error {
 		// wrapping with NotFound error to identify the error type by caller or middleware
 		return fmt.Errorf("%v %w", err, model.ErrNotFound)
 	}
+	if loan.Status == constants.Closed {
+		logger.Errorf("requested loan: %d already closed", loanID)
+		return fmt.Errorf("requested loan: %d already closed", loanID)
+	}
 	// reducing one from the avalilablecopies of the title
 	bookDet, ok := l.books[strings.ToLower(loan.Title)]
 	if !ok {
@@ -143,7 +152,7 @@ func (l *LocalStore) ReturnBook(ctx context.Context, loanID int) error {
 	logger.Infof("Title: %s is returned", loan.Title)
 
 	// removing the loan from cache since book is returned
-	delete(l.loans, loanID)
+	loan.Status = constants.Closed
 	logger.Infof("title: %s returned", loan.Title)
 	return nil
 }

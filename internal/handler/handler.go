@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/test/library-app/internal/constants"
 	"github.com/test/library-app/internal/logger"
 	"github.com/test/library-app/internal/model"
 	"github.com/test/library-app/internal/store"
@@ -67,7 +68,7 @@ func (h *Handler) GetAllBooks(c *gin.Context) {
 
 // GetAllLoans godoc
 //
-//	@Summary 		GetAllLoans fetches the loan details
+//	@Summary 		GetAllLoans fetches the all loan details
 //	@Description 	GetAllLoans retrieves the detail of all loans
 //	@Produce 		json
 //	@Success 		200	{array}		model.LoanDetails
@@ -193,6 +194,7 @@ func (h *Handler) LoanBook(c *gin.Context) {
 		Title:          borrowReq.Title,
 		LoanDate:       time.Now().Unix(),
 		ReturnDate:     time.Now().Add(4 * 7 * 24 * time.Hour).Unix(), // 4 weeks return period
+		Status:         constants.Active,
 	}
 	_, err = h.repo.AddLoan(c, loanDetails)
 	if err != nil {
@@ -255,7 +257,7 @@ func (h *Handler) ExtendLoan(c *gin.Context) {
 		// rest of all errors falls under this category
 		logger.Errorf("fetching loan %d failed. Error: %v", idInt, err)
 		customError := &model.CustomError{
-			Error: "failed to extend loan",
+			Error: err.Error(),
 			Code:  http.StatusInternalServerError,
 		}
 		c.JSON(http.StatusInternalServerError, customError)
@@ -302,7 +304,7 @@ func (h *Handler) ReturnBook(c *gin.Context) {
 		// rest of all errors falls under this category
 		logger.Errorf("fetching loan %d failed. Error: %v", idInt, err)
 		customError := &model.CustomError{
-			Error: "failed to return a book",
+			Error: err.Error(),
 			Code:  http.StatusInternalServerError,
 		}
 		c.JSON(http.StatusInternalServerError, customError)

@@ -1,4 +1,3 @@
--- drop table books;
 create table books (
 	id SERIAL PRIMARY KEY,
 	title VARCHAR(255) NOT NULL UNIQUE,
@@ -14,11 +13,12 @@ INSERT INTO books (title, available_copies) VALUES ('Book_5', 10);
 select * from  books;
 
 create table loans (
-	id int PRIMARY KEY,
+	id SERIAL PRIMARY KEY,
 	title VARCHAR(256) NOT NULL,
 	name_of_borrower VARCHAR(256) NOT NULL,
 	loan_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	return_date TIMESTAMP NOT NULL 
+	return_date TIMESTAMP NOT NULL,
+	status VARCHAR(100) NOT NULL
 )
 
 select * from loans;
